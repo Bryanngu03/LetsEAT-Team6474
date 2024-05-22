@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "LetsEAT",
+    "slug": "LetsEAT",
+    "version": "1.0.0",
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}

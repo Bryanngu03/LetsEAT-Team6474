@@ -1,108 +1,125 @@
-// screens/PostScreen.js
-import React, { Component } from 'react';
-import { View, Text, Button, Image, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert } from 'react-native';
+import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
-import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
+import Fire from '../Fire';
 import { firebase } from '../firebase';
 
-export default class PostScreen extends Component {
-  state = {
-    text: "",
-    image: null,
-  };
+export default class PostScreen extends React.Component {
+    state = {
+        text: '',
+        image: null,
+    };
 
-  componentDidMount() {
-    this.getPhotoPermission();
-  }
-
-  getPhotoPermission = async () => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-      }
-    } catch (error) {
-      console.error('Error requesting photo permissions:', error);
+    componentDidMount() {
+        this.getPhotoPermission();
     }
-  };
 
-  pickImage = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
+    getPhotoPermission = async () => {
+        if (Constants.platform.ios) {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert("We need permission to use your camera roll if you'd like to include a photo.");
+            }
+        }
+    };
 
-      if (!result.cancelled) {
-        this.setState({ image: result.uri });
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
+    handlePost = () => {
+        if (!this.state.image) {
+            Alert.alert("No image selected");
+            return;
+        }
+
+        Fire.shared
+            .addPost({ text: this.state.text.trim(), localUri: this.state.image })
+            .then(ref => {
+                this.setState({ text: '', image: null });
+                this.props.navigation.goBack();
+            })
+            .catch(error => {
+                Alert.alert(error.message);
+            });
+    };
+
+    pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+        });
+
+        console.log('Image picker result: ', result);
+
+        if (!result.cancelled) {
+            // Access the URI correctly from the result object
+            const uri = result.assets && result.assets.length > 0 ? result.assets[0].uri : result.uri;
+            this.setState({ image: uri });
+            console.log('Image URI: ', uri);
+        }
+    };
+
+    render() {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color="#D8D9DB" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this.handlePost}>
+                        <Text style={{ fontWeight: '500' }}>Post</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <Image source={require('../assets/tempAvatar.jpg')} style={styles.avatar} />
+                    <TextInput
+                        autoFocus
+                        multiline
+                        numberOfLines={4}
+                        style={{ flex: 1 }}
+                        placeholder="Want to share something?"
+                        onChangeText={text => this.setState({ text })}
+                        value={this.state.text}
+                    />
+                </View>
+
+                <TouchableOpacity style={styles.photo} onPress={this.pickImage}>
+                    <Ionicons name="camera" size={32} color="#D8D9DB" />
+                </TouchableOpacity>
+
+                <View style={{ marginHorizontal: 32, marginTop: 32, height: 150 }}>
+                    {this.state.image && <Image source={{ uri: this.state.image }} style={{ width: '100%', height: '100%' }} />}
+                </View>
+            </SafeAreaView>
+        );
     }
-  };
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Post</Text>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Want to share something?"
-            style={styles.textInput}
-            multiline
-            onChangeText={(text) => this.setState({ text })}
-            value={this.state.text}
-          />
-          <TouchableOpacity onPress={this.pickImage}>
-            <Ionicons name="camera-outline" size={30} color="gray" />
-          </TouchableOpacity>
-        </View>
-        {this.state.image && (
-          <Image source={{ uri: this.state.image }} style={styles.image} />
-        )}
-        <Button title="Post" onPress={() => console.log('Post button pressed')} />
-      </View>
-    );
-  }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    marginBottom: 16,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 18,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    marginVertical: 16,
-  },
+    container: {
+        flex: 1,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 32,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#D8D9DB',
+    },
+    inputContainer: {
+        margin: 32,
+        flexDirection: 'row',
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginRight: 16,
+    },
+    photo: {
+        alignItems: 'flex-end',
+        marginHorizontal: 32,
+    },
 });

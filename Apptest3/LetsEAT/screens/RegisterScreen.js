@@ -33,8 +33,15 @@ export default class RegisterScreen extends React.Component {
         }
     };
 
-    handleSignUp = () => {
-        Fire.shared.createUser(this.state.user);
+    handleSignUp = async () => {
+        try {
+            await Fire.shared.createUser(this.state.user);
+            Alert.alert('Success', 'Your account has been created successfully!', [
+                { text: 'OK', onPress: () => this.props.navigation.navigate('Login') }
+            ]);
+        } catch (error) {
+            this.setState({ errorMessage: error.message });
+        }
     };
 
     handlePickAvatar = async () => {

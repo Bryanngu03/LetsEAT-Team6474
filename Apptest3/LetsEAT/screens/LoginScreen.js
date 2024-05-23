@@ -52,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
         onPress={() => navigation.navigate("Register")}
       >
         <Text style={{ color: "#414959", fontSize: 13 }}>
-          New to SocialApp? <Text style={{ fontWeight: "500", color: "#E9446A" }}>Sign Up</Text>
+          New to LetsEAT? <Text style={{ fontWeight: "500", color: "#E9446A" }}>Sign Up</Text>
         </Text>
       </TouchableOpacity>
     </View>
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   greeting: {
     marginTop: 32,
     fontSize: 18,
-    fontWeight: "400",
+    fontWeight: "500",
     textAlign: "center",
   },
   errorMessage: {

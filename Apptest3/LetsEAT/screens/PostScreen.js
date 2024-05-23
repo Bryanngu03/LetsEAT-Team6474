@@ -266,6 +266,8 @@ export default class PostScreen extends React.Component {
     };
 
     pickImage = async () => {
+        UserPermissions.getCameraPermission();
+        
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,

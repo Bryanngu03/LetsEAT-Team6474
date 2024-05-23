@@ -109,7 +109,7 @@ class Fire {
             throw new Error("No localUri provided");
         }
         try {
-            const remoteUri = await this.uploadPhotoAsync(localUri);
+            const remoteUri = await this.uploadPhotoAsync(localUri, 'photos/${this.uid}/${Date.now{}}');
             console.log("Photo uploaded to: ", remoteUri);
 
             return new Promise((res, rej) => {
@@ -136,7 +136,7 @@ class Fire {
         }
     };
 
-    uploadPhotoAsync = async uri => {
+    uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
         console.log("Uploading photo to: ", path);
 
@@ -154,7 +154,7 @@ class Fire {
 
                 let upload = firebase
                     .storage()
-                    .ref(path)
+                    .ref(filename)
                     .put(file);
 
                 upload.on(

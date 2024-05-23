@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#EBECF4"
     },
     header: {
-        paddingTop: 16, //adjusted from 64
-        paddingBottom: 16,
+        paddingTop: 10, //adjusted from 64
+        paddingBottom: 10, //adjusted from 16
         backgroundColor: "#FFF",
         alignItems: "center",
         justifyContent: "center",

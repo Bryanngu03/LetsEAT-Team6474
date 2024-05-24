@@ -19,14 +19,14 @@ const LoginScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/Logo.png")} // Make sure the path to the logo is correct
+        source={require("../assets/Logo.png")} 
         style={styles.logo}
       />
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
       <View style={styles.form}>
-        <View style={{ marginTop: -100}}>
+        <View style={{ marginTop: -20 }}>
           <Text style={styles.inputTitle}>Email Address</Text>
           <TextInput
             style={styles.input}
@@ -64,13 +64,13 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 50,
   },
   logo: {
-    marginTop: -50,
     alignSelf: 'center',
-    width: 400, // Adjusted width
-    height: 400, // Adjusted height
-    resizeMode: 'contain', // Ensures the image is contained within the specified dimensions
+    width: 300, 
+    height: 300, 
+    resizeMode: 'contain', 
   },
   errorMessage: {
     height: 72,

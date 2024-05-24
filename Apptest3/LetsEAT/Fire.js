@@ -1,11 +1,9 @@
-//Fire.js
 import { firebase } from './firebase';
 
 class Fire {
     constructor() {
-        // Ensure Firebase is initialized only once
         if (!firebase.apps.length) {
-            firebase.initializeApp(FirebaseKeys);
+            firebase.initializeApp(firebaseConfig);
         }
     }
 
@@ -16,8 +14,11 @@ class Fire {
             throw new Error("No localUri provided");
         }
         try {
-            const remoteUri = await this.uploadPhotoAsync(localUri, 'photos/${this.uid}/${Date.now{}}');
+            const remoteUri = await this.uploadPhotoAsync(localUri, `photos/${this.uid}/${Date.now()}.jpg`);
             console.log("Photo uploaded to: ", remoteUri);
+
+            const userDoc = await this.firestore.collection('users').doc(this.uid).get();
+            const userData = userDoc.data();
 
             return new Promise((res, rej) => {
                 this.firestore
@@ -26,7 +27,9 @@ class Fire {
                         text,
                         uid: this.uid,
                         timestamp: this.timestamp,
-                        image: remoteUri
+                        image: remoteUri,
+                        name: userData.name,  // Add user's full name to the post
+                        avatar: userData.avatar // Add user's avatar to the post
                     })
                     .then(ref => {
                         console.log("Post added: ", ref.id);
@@ -45,6 +48,7 @@ class Fire {
 
     uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
+
         console.log("Uploading photo to: ", path);
 
         return new Promise(async (res, rej) => {
@@ -61,7 +65,7 @@ class Fire {
 
                 let upload = firebase
                     .storage()
-                    .ref(filename)
+                    .ref(path)
                     .put(file);
 
                 upload.on(

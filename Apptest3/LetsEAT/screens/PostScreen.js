@@ -1,19 +1,27 @@
-//PostScreen.js
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Fire from "../Fire";
 import * as ImagePicker from "expo-image-picker";
 import UserPermissions from "../utilities/UserPermissions";
+import { db } from '../firebase';
 
 export default class PostScreen extends React.Component {
     state = {
         text: "",
-        image: null
+        image: null,
+        user: {}
     };
 
     componentDidMount() {
         UserPermissions.getCameraPermission();
+        this.fetchUser();
+    }
+
+    fetchUser = async () => {
+        const uid = Fire.shared.uid;
+        const userDoc = await db.collection('users').doc(uid).get();
+        this.setState({ user: userDoc.data() });
     }
 
     handlePost = () => {
@@ -61,7 +69,7 @@ export default class PostScreen extends React.Component {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    <Image source={require("../assets/tempAvatar.jpg")} style={styles.avatar}></Image>
+                    <Image source={this.state.user.avatar ? { uri: this.state.user.avatar } : require("../assets/tempAvatar.jpg")} style={styles.avatar}></Image>
                     <TextInput
                         autoFocus={true}
                         multiline={true}

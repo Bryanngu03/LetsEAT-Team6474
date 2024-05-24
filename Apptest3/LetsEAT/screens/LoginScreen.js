@@ -1,6 +1,5 @@
-// LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { firebase } from '../firebase';
 
 const LoginScreen = ({ navigation }) => {
@@ -19,12 +18,15 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>{`Hello again.\nWelcome back.`}</Text>
+      <Image
+        source={require("../assets/Logo.png")} // Make sure the path to the logo is correct
+        style={styles.logo}
+      />
       <View style={styles.errorMessage}>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
       </View>
       <View style={styles.form}>
-        <View>
+        <View style={{ marginTop: -100}}>
           <Text style={styles.inputTitle}>Email Address</Text>
           <TextInput
             style={styles.input}
@@ -63,11 +65,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  greeting: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: "500",
-    textAlign: "center",
+  logo: {
+    marginTop: -50,
+    alignSelf: 'center',
+    width: 400, // Adjusted width
+    height: 400, // Adjusted height
+    resizeMode: 'contain', // Ensures the image is contained within the specified dimensions
   },
   errorMessage: {
     height: 72,
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    marginBottom: 48,
+    marginBottom: 36,
     marginHorizontal: 30,
   },
   inputTitle: {

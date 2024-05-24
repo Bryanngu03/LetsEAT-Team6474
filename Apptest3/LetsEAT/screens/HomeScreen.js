@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
@@ -7,45 +7,55 @@ import { db } from '../firebase';
 const HomeScreen = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const fetchPosts = async () => {
+        try {
+            const postsRef = db.collection('posts').orderBy('timestamp', 'desc');
+            postsRef.onSnapshot(async querySnapshot => {
+                const posts = [];
+                for (let doc of querySnapshot.docs) {
+                    const data = doc.data();
+                    const userRef = await db.collection('users').doc(data.uid).get();
+                    const userData = userRef.data();
+                    const post = {
+                        id: doc.id,
+                        image: data.image || '',
+                        text: data.text || '',
+                        timestamp: data.timestamp || 0,
+                        uid: data.uid || '',
+                        name: userData ? userData.name : 'Unknown',
+                        avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg'
+                    };
+                    posts.push(post);
+                }
+                console.log('Fetched posts: ', posts);
+                setPosts(posts);
+                setLoading(false);
+            });
+        } catch (error) {
+            console.error('Error fetching posts: ', error);
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const postsRef = db.collection('posts');
-                postsRef.onSnapshot(querySnapshot => {
-                    const posts = [];
-                    querySnapshot.forEach(doc => {
-                        const data = doc.data();
-                        const post = {
-                            id: doc.id,
-                            image: data.image || '',
-                            text: data.text || '',
-                            timestamp: data.timestamp || 0,
-                            uid: data.uid || ''
-                        };
-                        posts.push(post);
-                    });
-                    console.log('Fetched posts: ', posts); 
-                    setPosts(posts);
-                    setLoading(false);
-                });
-            } catch (error) {
-                console.error('Error fetching posts: ', error);
-                setLoading(false);
-            }
-        };
-
         fetchPosts();
+    }, []);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchPosts().then(() => setRefreshing(false));
     }, []);
 
     const renderPost = ({ item }) => {
         return (
             <View style={styles.feedItem}>
-                <Image source={require('../assets/tempAvatar.jpg')} style={styles.avatar} />
+                <Image source={{ uri: item.avatar }} style={styles.avatar} />
                 <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <View>
-                            <Text style={styles.name}>{item.uid}</Text>
+                            <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
                         </View>
                         <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
@@ -82,6 +92,12 @@ const HomeScreen = () => {
                 renderItem={renderPost}
                 keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
             />
         </View>
     );

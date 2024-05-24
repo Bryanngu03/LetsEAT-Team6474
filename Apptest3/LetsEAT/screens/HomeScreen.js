@@ -1,101 +1,106 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, FlatList } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import moment from "moment";
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import moment from 'moment';
+import { db } from '../firebase';
 
-const posts = [
-    {
-        id: "1",
-        name: "Sarah Williams",
-        text: "Flavourful nasi lemak I had at Madam Kuam!",
-        timestamp: 1716445995000, //timestamp in milliseconds
-        avatar: require("../assets/tempAvatar.jpg"),
-        image: require("../assets/tempImage1.jpg")
-    },
-    {
-        id: "2",
-        name: "Cody Lim",
-        text: "Supurb chicken rice! Got discount now, while stocks last~",
-        timestamp: 1716442393000, //timestamp in milliseconds
-        avatar: require("../assets/tempAvatar2.jpg"),
-        image: require("../assets/tempImage2.jpg")
-    },
-    {
-        id: "3",
-        name: "Chen Huihui",
-        text: "I love big macs!",
-        timestamp: 1716441793000, //timestamp in milliseconds
-        avatar: require("../assets/tempAvatar3.jpg"),
-        image: require("../assets/tempImage3.jpg")
-    },
-    {
-        id: "4",
-        name: "Aditi",
-        text: "Delicious homemade pasta, DM for recipe!",
-        timestamp: 1569109273726, //timestamp in milliseconds
-        avatar: require("../assets/tempAvatar4.jpg"),
-        image: require("../assets/tempImage4.jpg")
-    }
-];
+const HomeScreen = () => {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-export default class HomeScreen extends React.Component {
-    renderPost = post => {
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const postsRef = db.collection('posts');
+                postsRef.onSnapshot(querySnapshot => {
+                    const posts = [];
+                    querySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const post = {
+                            id: doc.id,
+                            image: data.image || '',
+                            text: data.text || '',
+                            timestamp: data.timestamp || 0,
+                            uid: data.uid || ''
+                        };
+                        posts.push(post);
+                    });
+                    console.log('Fetched posts: ', posts); 
+                    setPosts(posts);
+                    setLoading(false);
+                });
+            } catch (error) {
+                console.error('Error fetching posts: ', error);
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    const renderPost = ({ item }) => {
         return (
             <View style={styles.feedItem}>
-                <Image source={post.avatar} style={styles.avatar} />
+                <Image source={require('../assets/tempAvatar.jpg')} style={styles.avatar} />
                 <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <View>
-                            <Text style={styles.name}>{post.name}</Text>
-                            <Text style={styles.timestamp}>{moment(post.timestamp).fromNow()}</Text>
+                            <Text style={styles.name}>{item.uid}</Text>
+                            <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
                         </View>
-
-                        <Ionicons name="ellipsis-horizontal" size={24} color="#73788B" />
+                        <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
                     </View>
-                    <Text style={styles.post}>{post.text}</Text>
-                    <Image source={post.image} style={styles.postImage} resizeMode="cover" />
-                    <View style={{ flexDirection: "row" }}>
-                        <Ionicons name="heart-outline" size={24} color="#73788B" style={{ marginRight: 16 }} />
-                        <Ionicons name="chatbox-outline" size={24} color="#73788B" />
+                    <Text style={styles.post}>{item.text}</Text>
+                    {item.image ? (
+                        <Image source={{ uri: item.image }} style={styles.postImage} resizeMode='cover' />
+                    ) : null}
+                    <View style={{ flexDirection: 'row' }}>
+                        <Ionicons name='heart-outline' size={24} color='#73788B' style={{ marginRight: 16 }} />
+                        <Ionicons name='chatbox-outline' size={24} color='#73788B' />
                     </View>
                 </View>
             </View>
         );
     };
 
-    render() {
+    if (loading) {
         return (
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Feed</Text>
-                </View>
-
-                <FlatList
-                    style={styles.feed}
-                    data={posts}
-                    renderItem={({ item }) => this.renderPost(item)}
-                    keyExtractor={item => item.id}
-                    showsVerticalScrollIndicator={false}
-                />
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size='large' color='#0000ff' />
             </View>
         );
     }
-}
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Feed</Text>
+            </View>
+            <FlatList
+                style={styles.feed}
+                data={posts}
+                renderItem={renderPost}
+                keyExtractor={item => item.id}
+                showsVerticalScrollIndicator={false}
+            />
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#EBECF4"
+        backgroundColor: '#EBECF4'
     },
     header: {
-        paddingTop: 10, //adjusted from 64
-        paddingBottom: 10, //adjusted from 16
-        backgroundColor: "#FFF",
-        alignItems: "center",
-        justifyContent: "center",
+        paddingTop: 16,
+        paddingBottom: 16,
+        backgroundColor: '#FFF',
+        alignItems: 'center',
+        justifyContent: 'center',
         borderBottomWidth: 1,
-        borderBottomColor: "#EBECF4",
-        shadowColor: "#454D65",
+        borderBottomColor: '#EBECF4',
+        shadowColor: '#454D65',
         shadowOffset: { height: 5 },
         shadowRadius: 15,
         shadowOpacity: 0.2,
@@ -103,16 +108,16 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: "500"
+        fontWeight: '500'
     },
     feed: {
         marginHorizontal: 16
     },
     feedItem: {
-        backgroundColor: "#FFF",
+        backgroundColor: '#FFF',
         borderRadius: 5,
         padding: 8,
-        flexDirection: "row",
+        flexDirection: 'row',
         marginVertical: 8
     },
     avatar: {
@@ -123,23 +128,30 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 15,
-        fontWeight: "500",
-        color: "#454D65"
+        fontWeight: '500',
+        color: '#454D65'
     },
     timestamp: {
         fontSize: 11,
-        color: "#C4C6CE",
+        color: '#C4C6CE',
         marginTop: 4
     },
     post: {
         marginTop: 16,
         fontSize: 14,
-        color: "#838899"
+        color: '#838899'
     },
     postImage: {
         width: undefined,
         height: 150,
         borderRadius: 5,
         marginVertical: 16
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
+
+export default HomeScreen;

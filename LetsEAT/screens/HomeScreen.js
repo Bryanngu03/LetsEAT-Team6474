@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
@@ -9,6 +9,8 @@ const HomeScreen = ({ navigation }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
 
     const fetchPosts = async () => {
         try {
@@ -58,16 +60,31 @@ const HomeScreen = ({ navigation }) => {
         const postRef = db.collection('posts').doc(postId);
 
         if (liked) {
-            // Unlike the post
+            // if true means Unlike
             await likeRef.delete();
             postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
         } else {
-            // Like the post
             await likeRef.set({ uid: user.uid });
             postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
         }
 
         fetchPosts(); // Refresh the posts to show updated like count and status
+    };
+
+    const handleDelete = async (postId, postUid) => {
+        const user = firebase.auth().currentUser;
+        if (user.uid !== postUid) {
+            Alert.alert("You can only delete your own posts");
+            return;
+        }
+        try {
+            await db.collection('posts').doc(postId).delete();
+            fetchPosts();
+            setModalVisible(false);
+        } catch (error) {
+            console.error("Error deleting post: ", error);
+            Alert.alert("Error deleting post");
+        }
     };
 
     useEffect(() => {
@@ -79,6 +96,11 @@ const HomeScreen = ({ navigation }) => {
         fetchPosts().then(() => setRefreshing(false));
     }, []);
 
+    const openModal = (post) => {
+        setSelectedPost(post);
+        setModalVisible(true);
+    };
+
     const renderPost = ({ item }) => {
         return (
             <View style={styles.feedItem}>
@@ -89,7 +111,9 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
                         </View>
-                        <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
+                        <TouchableOpacity onPress={() => openModal(item)}>
+                            <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
+                        </TouchableOpacity>
                     </View>
                     <Text style={styles.post}>{item.text}</Text>
                     {item.image ? (
@@ -136,6 +160,31 @@ const HomeScreen = ({ navigation }) => {
                     />
                 }
             />
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <TouchableOpacity
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => handleDelete(selectedPost.id, selectedPost.uid)}
+                        >
+                            <Text style={styles.textStyle}>Delete</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => setModalVisible(!modalVisible)}
+                        >
+                            <Text style={styles.textStyle}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -209,6 +258,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 16
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    button: {
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2
+    },
+    buttonClose: {
+        backgroundColor: '#2196F3',
+        marginTop: 10
+    },
+    textStyle: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center'
     }
 });
 

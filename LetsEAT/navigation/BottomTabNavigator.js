@@ -1,13 +1,23 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import MessageScreen from '../screens/MessageScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import PostScreen from '../screens/PostScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import CommentsScreen from '../screens/CommentsScreen';
 import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
+const HomeStack = createStackNavigator();
+
+const HomeStackScreen = () => (
+    <HomeStack.Navigator>
+        <HomeStack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="Comments" component={CommentsScreen} />
+    </HomeStack.Navigator>
+);
 
 const BottomTabNavigator = () => {
     return (
@@ -35,7 +45,7 @@ const BottomTabNavigator = () => {
                 tabBarStyle: { display: 'flex' }
             })}
         >
-            <Tab.Screen name="HomeTab" component={HomeScreen} />
+            <Tab.Screen name="HomeTab" component={HomeStackScreen} />
             <Tab.Screen name="Messages" component={MessageScreen} />
             <Tab.Screen name="Post" component={PostScreen} />
             <Tab.Screen name="Notifications" component={NotificationScreen} />

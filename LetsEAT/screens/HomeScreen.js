@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
+import firebase from 'firebase/compat/app';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -25,11 +26,21 @@ const HomeScreen = () => {
                         timestamp: data.timestamp || 0,
                         uid: data.uid || '',
                         name: userData ? userData.name : 'Unknown',
-                        avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg'
+                        avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg',
+                        likes: data.likes || 0,
+                        commentsCount: data.commentsCount || 0,
+                        liked: false // Track if the user has liked this post
                     };
+
+                    // Check if the current user has liked this post
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        const likeRef = await db.collection('posts').doc(doc.id).collection('likes').doc(user.uid).get();
+                        post.liked = likeRef.exists;
+                    }
+
                     posts.push(post);
                 }
-                console.log('Fetched posts: ', posts);
                 setPosts(posts);
                 setLoading(false);
             });
@@ -37,6 +48,26 @@ const HomeScreen = () => {
             console.error('Error fetching posts: ', error);
             setLoading(false);
         }
+    };
+
+    const handleLike = async (postId, liked) => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        const likeRef = db.collection('posts').doc(postId).collection('likes').doc(user.uid);
+        const postRef = db.collection('posts').doc(postId);
+
+        if (liked) {
+            // Unlike the post
+            await likeRef.delete();
+            postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
+        } else {
+            // Like the post
+            await likeRef.set({ uid: user.uid });
+            postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
+        }
+
+        fetchPosts(); // Refresh the posts to show updated like count and status
     };
 
     useEffect(() => {
@@ -64,9 +95,15 @@ const HomeScreen = () => {
                     {item.image ? (
                         <Image source={{ uri: item.image }} style={styles.postImage} resizeMode='cover' />
                     ) : null}
-                    <View style={{ flexDirection: 'row' }}>
-                        <Ionicons name='heart-outline' size={24} color='#73788B' style={{ marginRight: 16 }} />
-                        <Ionicons name='chatbox-outline' size={24} color='#73788B' />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => handleLike(item.id, item.liked)} style={styles.iconContainer}>
+                            <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={24} color={item.liked ? 'red' : '#73788B'} style={{ marginRight: 8 }} />
+                            <Text>{item.likes}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('Comments', { postId: item.id })} style={styles.iconContainer}>
+                            <Ionicons name='chatbox-outline' size={24} color='#73788B' style={{ marginRight: 8 }} />
+                            <Text>{item.commentsCount}</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -167,6 +204,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    iconContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 16
     }
 });
 

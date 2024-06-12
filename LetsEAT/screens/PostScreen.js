@@ -31,7 +31,12 @@ export default class PostScreen extends React.Component {
         }
 
         Fire.shared
-            .addPost({ text: this.state.text.trim(), localUri: this.state.image })
+            .addPost({ 
+                text: this.state.text.trim(), 
+                localUri: this.state.image, 
+                likes: 0, 
+                commentsCount: 0 
+            })
             .then(ref => {
                 this.setState({ text: "", image: null });
                 this.props.navigation.goBack();

@@ -7,16 +7,12 @@ class Fire {
         }
     }
 
-    addPost = async ({ text, localUri }) => {
-        console.log("Starting addPost...");
+    addPost = async ({ text, localUri, likes, commentsCount }) => {
         if (!localUri) {
-            console.error("No localUri provided");
             throw new Error("No localUri provided");
         }
         try {
             const remoteUri = await this.uploadPhotoAsync(localUri, `photos/${this.uid}/${Date.now()}.jpg`);
-            console.log("Photo uploaded to: ", remoteUri);
-
             const userDoc = await this.firestore.collection('users').doc(this.uid).get();
             const userData = userDoc.data();
 
@@ -28,20 +24,19 @@ class Fire {
                         uid: this.uid,
                         timestamp: this.timestamp,
                         image: remoteUri,
-                        name: userData.name,  // Add user's full name to the post
-                        avatar: userData.avatar // Add user's avatar to the post
+                        name: userData.name,
+                        avatar: userData.avatar,
+                        likes,
+                        commentsCount
                     })
                     .then(ref => {
-                        console.log("Post added: ", ref.id);
                         res(ref);
                     })
                     .catch(error => {
-                        console.error("Error adding post to Firestore: ", error);
                         rej(error);
                     });
             });
         } catch (error) {
-            console.error("Error in addPost: ", error);
             throw error;
         }
     };
@@ -49,12 +44,9 @@ class Fire {
     uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
 
-        console.log("Uploading photo to: ", path);
-
         return new Promise(async (res, rej) => {
             try {
                 if (!uri.startsWith('file://')) {
-                    console.error("Invalid URI: ", uri);
                     throw new Error("Invalid URI");
                 }
                 const response = await fetch(uri);
@@ -72,17 +64,14 @@ class Fire {
                     'state_changed',
                     snapshot => {},
                     err => {
-                        console.error("Upload error: ", err);
                         rej(err);
                     },
                     async () => {
                         const url = await upload.snapshot.ref.getDownloadURL();
-                        console.log("Photo uploaded to: ", url);
                         res(url);
                     }
                 );
             } catch (error) {
-                console.error("Network request failed: ", error);
                 rej(error);
             }
         });

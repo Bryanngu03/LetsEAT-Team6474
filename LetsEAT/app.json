@@ -27,6 +27,15 @@
         "NSCameraUsageDescription": "This app uses the camera to take photos.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload pictures."
       }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c779b40e-2280-437d-9c0f-f0417c4ef97e"
+      }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/c779b40e-2280-437d-9c0f-f0417c4ef97e"
     }
   }
 }

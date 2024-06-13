@@ -3,8 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import MessageScreen from '../screens/MessageScreen';
-import ReminderScreen from '../screens/ReminderScreen';
-import AddReminderScreen from '../screens/AddReminderScreen';
+import NotificationScreen from '../screens/NotificationScreen';
 import PostScreen from '../screens/PostScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import CommentsScreen from '../screens/CommentsScreen';
@@ -12,20 +11,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
-const ReminderStack = createStackNavigator();
 
 const HomeStackScreen = () => (
     <HomeStack.Navigator>
         <HomeStack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="Comments" component={CommentsScreen} />
     </HomeStack.Navigator>
-);
-
-const ReminderStackScreen = () => (
-    <ReminderStack.Navigator>
-        <ReminderStack.Screen name="Reminders" component={ReminderScreen} options={{ headerShown: false }} />
-        <ReminderStack.Screen name="AddReminder" component={AddReminderScreen} />
-    </ReminderStack.Navigator>
 );
 
 const BottomTabNavigator = () => {
@@ -39,10 +30,10 @@ const BottomTabNavigator = () => {
                         iconName = 'home-outline';
                     } else if (route.name === 'Messages') {
                         iconName = 'chatbubbles-outline';
+                    } else if (route.name === 'Notifications') {
+                        iconName = 'notifications-outline';
                     } else if (route.name === 'Post') {
                         iconName = 'add-circle-outline';
-                    } else if (route.name === 'Reminders') {
-                        iconName = 'alarm-outline';
                     } else if (route.name === 'Profile') {
                         iconName = 'person-outline';
                     }
@@ -57,7 +48,7 @@ const BottomTabNavigator = () => {
             <Tab.Screen name="HomeTab" component={HomeStackScreen} />
             <Tab.Screen name="Messages" component={MessageScreen} />
             <Tab.Screen name="Post" component={PostScreen} />
-            <Tab.Screen name="Reminders" component={ReminderStackScreen} />
+            <Tab.Screen name="Notifications" component={NotificationScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );

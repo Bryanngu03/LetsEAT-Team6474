@@ -60,7 +60,7 @@ const HomeScreen = ({ navigation }) => {
         const postRef = db.collection('posts').doc(postId);
 
         if (liked) {
-            // if true means Unlike
+            // Unlike
             await likeRef.delete();
             postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
         } else {
@@ -78,11 +78,14 @@ const HomeScreen = ({ navigation }) => {
             return;
         }
         try {
-            await db.collection('posts').doc(postId).delete();
+            const postRef = db.collection('posts').doc(postId);
+            // Delete the post document
+            await postRef.delete();
+            
             fetchPosts();
+            setSelectedPost(null);
             setModalVisible(false);
         } catch (error) {
-            console.error("Error deleting post: ", error);
             Alert.alert("Error deleting post");
         }
     };

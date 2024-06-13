@@ -1,11 +1,11 @@
-// NotificationScreen.js
+// ReminderScreen.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const NotificationScreen = () => {
+const ReminderScreen = () => {
   return (
     <View style={styles.container}>
-      <Text>Notifications</Text>
+      <Text>Reminders</Text>
     </View>
   );
 };
@@ -18,4 +18,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NotificationScreen;
+export default ReminderScreen;

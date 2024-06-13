@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import MessageScreen from '../screens/MessageScreen';
-import NotificationScreen from '../screens/NotificationScreen';
+import ReminderScreen from '../screens/ReminderScreen';
 import PostScreen from '../screens/PostScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import CommentsScreen from '../screens/CommentsScreen';
@@ -30,8 +30,8 @@ const BottomTabNavigator = () => {
                         iconName = 'home-outline';
                     } else if (route.name === 'Messages') {
                         iconName = 'chatbubbles-outline';
-                    } else if (route.name === 'Notifications') {
-                        iconName = 'notifications-outline';
+                    } else if (route.name === 'Reminders') {
+                        iconName = 'alarm-outline';
                     } else if (route.name === 'Post') {
                         iconName = 'add-circle-outline';
                     } else if (route.name === 'Profile') {
@@ -48,7 +48,7 @@ const BottomTabNavigator = () => {
             <Tab.Screen name="HomeTab" component={HomeStackScreen} />
             <Tab.Screen name="Messages" component={MessageScreen} />
             <Tab.Screen name="Post" component={PostScreen} />
-            <Tab.Screen name="Notifications" component={NotificationScreen} />
+            <Tab.Screen name="Reminders" component={ReminderScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );

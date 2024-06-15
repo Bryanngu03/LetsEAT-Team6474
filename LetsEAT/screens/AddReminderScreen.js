@@ -1,6 +1,6 @@
 // AddReminderScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fire from '../Fire';
 
@@ -9,10 +9,22 @@ const AddReminderScreen = ({ navigation }) => {
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
+    const [mode, setMode] = useState('date');
 
     const handleAddReminder = async () => {
         await Fire.shared.addReminder({ title, description, date });
         navigation.goBack();
+    };
+
+    const showMode = (currentMode) => {
+        setShowPicker(true);
+        setMode(currentMode);
+    };
+
+    const onChange = (event, selectedDate) => {
+        const currentDate = selectedDate || date;
+        setShowPicker(Platform.OS === 'ios');
+        setDate(currentDate);
     };
 
     return (
@@ -24,20 +36,20 @@ const AddReminderScreen = ({ navigation }) => {
             <TextInput style={styles.input} value={description} onChangeText={setDescription} />
 
             <Text style={styles.label}>Date & Time</Text>
-            <TouchableOpacity onPress={() => setShowPicker(true)}>
-                <Text style={styles.dateText}>{date.toLocaleString()}</Text>
+            <TouchableOpacity onPress={() => showMode('date')}>
+                <Text style={styles.dateText}>{date.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => showMode('time')}>
+                <Text style={styles.dateText}>{date.toLocaleTimeString()}</Text>
             </TouchableOpacity>
 
             {showPicker && (
                 <DateTimePicker
                     value={date}
-                    mode="datetime"
+                    mode={mode}
                     display="default"
-                    onChange={(event, selectedDate) => {
-                        const currentDate = selectedDate || date;
-                        setShowPicker(false);
-                        setDate(currentDate);
-                    }}
+                    onChange={onChange}
+                    onCancel={() => setShowPicker(false)} // Handle cancel button
                 />
             )}
 

@@ -1,3 +1,4 @@
+// LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { firebase } from '../firebase';
@@ -10,7 +11,7 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
-      navigation.navigate('Home');
+      navigation.navigate('Main'); // Navigate to the bottom tab navigator
     } catch (error) {
       setErrorMessage(error.message);
     }

@@ -10,7 +10,6 @@ const ReminderScreen = ({ navigation }) => {
     useEffect(() => {
         const fetchReminders = async () => {
             const reminders = await Fire.shared.getReminders();
-            console.log("Fetched Reminders: ", reminders); // Add this line to log fetched reminders
             setReminders(reminders);
         };
 

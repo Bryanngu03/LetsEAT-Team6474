@@ -8,7 +8,6 @@ const ReminderScreen = ({ navigation }) => {
     const [reminders, setReminders] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
 
-    // Function to fetch reminders from the Firestore
     const fetchReminders = useCallback(async () => {
         setRefreshing(true);
         const reminders = await Fire.shared.getReminders();
@@ -16,23 +15,34 @@ const ReminderScreen = ({ navigation }) => {
         setRefreshing(false);
     }, []);
 
-    // Fetch reminders when the component mounts
     useEffect(() => {
         fetchReminders();
     }, [fetchReminders]);
+
+    const deleteReminder = async (id) => {
+        await Fire.shared.deleteReminder(id);
+        fetchReminders(); // Refresh reminders list after deletion
+    };
+
+    const renderItem = ({ item }) => (
+        <View style={styles.reminderItem}>
+            <View style={styles.reminderInfo}>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.description}>{item.description}</Text>
+                <Text style={styles.date}>{new Date(item.date).toLocaleString()}</Text>
+            </View>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteReminder(item.id)}>
+                <Ionicons name="ellipse-outline" size={24} color="black" />
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
             <FlatList
                 data={reminders}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <View style={styles.reminderItem}>
-                        <Text style={styles.title}>{item.title}</Text>
-                        <Text style={styles.description}>{item.description}</Text>
-                        <Text style={styles.date}>{new Date(item.date).toLocaleString()}</Text>
-                    </View>
-                )}
+                renderItem={renderItem}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -54,9 +64,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     reminderItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         padding: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
+    },
+    reminderInfo: {
+        flex: 1,
     },
     title: {
         fontSize: 16,
@@ -69,6 +85,9 @@ const styles = StyleSheet.create({
     date: {
         fontSize: 12,
         color: '#555',
+    },
+    deleteButton: {
+        padding: 8,
     },
     addButton: {
         position: 'absolute',

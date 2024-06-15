@@ -1,20 +1,25 @@
 // ReminderScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import Fire from '../Fire';
 import { Ionicons } from '@expo/vector-icons';
 
 const ReminderScreen = ({ navigation }) => {
     const [reminders, setReminders] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        const fetchReminders = async () => {
-            const reminders = await Fire.shared.getReminders();
-            setReminders(reminders);
-        };
-
-        fetchReminders();
+    // Function to fetch reminders from the Firestore
+    const fetchReminders = useCallback(async () => {
+        setRefreshing(true);
+        const reminders = await Fire.shared.getReminders();
+        setReminders(reminders);
+        setRefreshing(false);
     }, []);
+
+    // Fetch reminders when the component mounts
+    useEffect(() => {
+        fetchReminders();
+    }, [fetchReminders]);
 
     return (
         <View style={styles.container}>
@@ -28,6 +33,12 @@ const ReminderScreen = ({ navigation }) => {
                         <Text style={styles.date}>{new Date(item.date).toLocaleString()}</Text>
                     </View>
                 )}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={fetchReminders}
+                    />
+                }
             />
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddReminder')}>
                 <Ionicons name="add" size={24} color="#fff" />

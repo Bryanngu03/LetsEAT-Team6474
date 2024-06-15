@@ -13,7 +13,7 @@ const AddReminderScreen = ({ navigation }) => {
 
     const handleAddReminder = async () => {
         await Fire.shared.addReminder({ title, description, date });
-        navigation.goBack();
+        navigation.goBack(); // Go back to the previous screen
     };
 
     const showMode = (currentMode) => {

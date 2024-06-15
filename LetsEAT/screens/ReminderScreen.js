@@ -1,6 +1,7 @@
 // ReminderScreen.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Fire from '../Fire';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,6 +12,8 @@ const ReminderScreen = ({ navigation }) => {
     const fetchReminders = useCallback(async () => {
         setRefreshing(true);
         const reminders = await Fire.shared.getReminders();
+        // Sort reminders by date (closest to now first)
+        reminders.sort((a, b) => a.date - b.date);
         setReminders(reminders);
         setRefreshing(false);
     }, []);
@@ -18,6 +21,28 @@ const ReminderScreen = ({ navigation }) => {
     useEffect(() => {
         fetchReminders();
     }, [fetchReminders]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchReminders();
+        }, [fetchReminders])
+    );
+
+    const confirmDelete = (id) => {
+        Alert.alert(
+            "Delete Reminder",
+            "Are you sure you want to delete this reminder?",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                { text: "Delete", onPress: () => deleteReminder(id) }
+            ],
+            { cancelable: false }
+        );
+    };
 
     const deleteReminder = async (id) => {
         await Fire.shared.deleteReminder(id);
@@ -31,8 +56,8 @@ const ReminderScreen = ({ navigation }) => {
                 <Text style={styles.description}>{item.description}</Text>
                 <Text style={styles.date}>{new Date(item.date).toLocaleString()}</Text>
             </View>
-            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteReminder(item.id)}>
-                <Ionicons name="ellipse-outline" size={24} color="black" />
+            <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
+                <Ionicons name="close-circle-outline" size={24} color="red" />
             </TouchableOpacity>
         </View>
     );

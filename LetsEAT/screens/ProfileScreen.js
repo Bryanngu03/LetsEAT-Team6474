@@ -1,6 +1,6 @@
 // ProfileScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, Clipboard } from 'react-native';
 import { firebase } from '../firebase';
 import Fire from '../Fire';
 
@@ -45,6 +45,11 @@ const ProfileScreen = ({ navigation }) => {
     ]);
   };
 
+  const copyToClipboard = () => {
+    Clipboard.setString(uid);
+    Alert.alert('Copied to Clipboard', 'User ID has been copied to clipboard.');
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -72,7 +77,12 @@ const ProfileScreen = ({ navigation }) => {
       )}
       <Text style={styles.name}>{user?.name}</Text>
       <Text style={styles.email}>{user?.email}</Text>
-      <Text style={styles.uid}>User ID: {uid}</Text>
+      <View style={styles.uidContainer}>
+        <Text style={styles.uid}>User ID: {uid}</Text>
+        <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
+          <Text style={styles.copyButtonText}>Copy</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
@@ -107,13 +117,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 5,
   },
+  uidContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
   uid: {
     fontSize: 10,
-    marginTop: 5,
     color: 'grey',  
   },
+  copyButton: {
+    marginLeft: 10,
+    backgroundColor: '#E9446A',
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  copyButtonText: {
+    color: '#FFF',
+    fontSize: 10,
+  },
   logoutButton: {
-    marginTop: 20,
+    marginTop: 12,
     backgroundColor: '#E9446A',
     paddingVertical: 10,
     paddingHorizontal: 20,

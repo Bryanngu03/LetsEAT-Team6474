@@ -64,6 +64,9 @@ const ReminderScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.tabHeader}>
+                <Text style={styles.tabHeaderTitle}>Reminders</Text>
+            </View>
             <FlatList
                 data={reminders}
                 keyExtractor={(item) => item.id}
@@ -87,6 +90,24 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
         backgroundColor: '#fff',
+    },
+    tabHeader: {
+        paddingTop: 16,
+        paddingBottom: 16,
+        backgroundColor: '#FFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EBECF4',
+        shadowColor: '#454D65',
+        shadowOffset: { height: 5 },
+        shadowRadius: 15,
+        shadowOpacity: 0.2,
+        zIndex: 10
+    },
+    tabHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '500'
     },
     reminderItem: {
         flexDirection: 'row',

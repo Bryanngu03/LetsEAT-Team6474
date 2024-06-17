@@ -64,6 +64,9 @@ export default class PostScreen extends React.Component {
     render() {
         return (
             <SafeAreaView style={styles.container}>
+                <View style={styles.tabHeader}>
+                    <Text style={styles.tabHeaderTitle}>Post</Text>
+                </View>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#D8D9DB"></Ionicons>
@@ -101,6 +104,24 @@ export default class PostScreen extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1
+    },
+    tabHeader: {
+        paddingTop: 30,
+        paddingBottom: 16,
+        backgroundColor: '#FFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EBECF4',
+        shadowColor: '#454D65',
+        shadowOffset: { height: 5 },
+        shadowRadius: 15,
+        shadowOpacity: 0.2,
+        zIndex: 10
+    },
+    tabHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '500'
     },
     header: {
         flexDirection: "row",

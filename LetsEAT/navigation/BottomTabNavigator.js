@@ -1,9 +1,9 @@
-// BottomTabNavigator.js
+// navigation/BottomTabNavigator.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
-import MessageScreen from '../screens/MessageScreen';
+import MessageListScreen from '../screens/MessageListScreen';
 import ReminderScreen from '../screens/ReminderScreen';
 import PostScreen from '../screens/PostScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -56,7 +56,7 @@ const BottomTabNavigator = () => {
             })}
         >
             <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Messages" component={MessageScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="Messages" component={MessageListScreen} options={{ headerShown: false }} />
             <Tab.Screen name="Post" component={PostScreen} options={{ headerShown: false }} />
             <Tab.Screen name="Reminders" component={ReminderStackScreen} options={{ headerShown: false }} />
             <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />

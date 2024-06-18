@@ -10,14 +10,14 @@ export default function LoadingScreen() {
     React.useEffect(() => {
         const unsubscribe = firebase.auth().onAuthStateChanged(user => {
             if (user) {
-                navigation.replace('Home');
+                navigation.replace('Main');
             } else {
                 navigation.replace('Login');
             }
         });
 
         return unsubscribe; // Clean up subscription on unmount
-    }, []);
+    }, [navigation]);
 
     return (
         <View style={styles.container}>

@@ -7,6 +7,46 @@ class Fire {
         }
     }
 
+    // Method to create or get chat ID based on participants
+    getOrCreateChatId = async (userId1, userId2) => {
+        const chatId = `${userId1}_${userId2}`;
+        const reverseChatId = `${userId2}_${userId1}`;
+        let chatDoc = await this.firestore.collection('chats').doc(chatId).get();
+
+        if (!chatDoc.exists) {
+            chatDoc = await this.firestore.collection('chats').doc(reverseChatId).get();
+            if (!chatDoc.exists) {
+                await this.firestore.collection('chats').doc(chatId).set({
+                    participants: [userId1, userId2],
+                    latestMessage: '',
+                    latestMessageTimestamp: Date.now(),
+                });
+                return chatId;
+            } else {
+                return reverseChatId;
+            }
+        } else {
+            return chatId;
+        }
+    };
+
+    sendMessage = async (chatId, message) => {
+        const chatDocRef = this.firestore.collection('chats').doc(chatId);
+        const messagesCollection = chatDocRef.collection('messages');
+
+        await messagesCollection.add({
+            text: message.text,
+            sender: message.sender,
+            receiver: message.receiver,
+            timestamp: this.timestamp,
+        });
+
+        await chatDocRef.update({
+            latestMessage: message.text,
+            latestMessageTimestamp: this.timestamp,
+        });
+    };
+
     addPost = async ({ text, localUri, likes, commentsCount }) => {
         if (!localUri) {
             throw new Error("No localUri provided");

@@ -205,6 +205,19 @@ class Fire {
         });
     };
 
+    savePost = async (postId) => {
+        const user = firebase.auth().currentUser;
+        if (!user) throw new Error("User not authenticated");
+
+        const postRef = this.firestore.collection('posts').doc(postId);
+        const postDoc = await postRef.get();
+
+        if (!postDoc.exists) throw new Error("Post not found");
+
+        const savedPostsRef = this.firestore.collection('users').doc(user.uid).collection('savedPosts').doc(postId);
+        await savedPostsRef.set(postDoc.data());
+    };
+
     get firestore() {
         return firebase.firestore();
     }

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
 import firebase from 'firebase/compat/app';
+import Fire from '../Fire';
 
 const HomeScreen = ({ navigation }) => {
     const [posts, setPosts] = useState([]);
@@ -17,6 +18,7 @@ const HomeScreen = ({ navigation }) => {
             const postsRef = db.collection('posts').orderBy('timestamp', 'desc');
             postsRef.onSnapshot(async querySnapshot => {
                 const posts = [];
+                const user = firebase.auth().currentUser;
                 for (let doc of querySnapshot.docs) {
                     const data = doc.data();
                     const userRef = await db.collection('users').doc(data.uid).get();
@@ -31,14 +33,16 @@ const HomeScreen = ({ navigation }) => {
                         avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg',
                         likes: data.likes || 0,
                         commentsCount: data.commentsCount || 0,
-                        liked: false // Track if the user has liked this post
+                        liked: false, // Track if the user has liked this post
+                        saved: false  // Track if the user has saved this post
                     };
 
-                    // Check if the current user has liked this post
-                    const user = firebase.auth().currentUser;
                     if (user) {
                         const likeRef = await db.collection('posts').doc(doc.id).collection('likes').doc(user.uid).get();
                         post.liked = likeRef.exists;
+
+                        const savedRef = await db.collection('users').doc(user.uid).collection('savedPosts').doc(doc.id).get();
+                        post.saved = savedRef.exists;
                     }
 
                     posts.push(post);
@@ -60,7 +64,6 @@ const HomeScreen = ({ navigation }) => {
         const postRef = db.collection('posts').doc(postId);
 
         if (liked) {
-            // Unlike
             await likeRef.delete();
             postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
         } else {
@@ -68,7 +71,7 @@ const HomeScreen = ({ navigation }) => {
             postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
         }
 
-        fetchPosts(); // Refresh the posts to show updated like count and status
+        fetchPosts();
     };
 
     const handleDelete = async (postId, postUid) => {
@@ -79,7 +82,6 @@ const HomeScreen = ({ navigation }) => {
         }
         try {
             const postRef = db.collection('posts').doc(postId);
-            // Delete the post document
             await postRef.delete();
             
             fetchPosts();
@@ -88,6 +90,21 @@ const HomeScreen = ({ navigation }) => {
         } catch (error) {
             Alert.alert("Error deleting post");
         }
+    };
+
+    const handleSave = async (postId, saved) => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        const savedRef = db.collection('users').doc(user.uid).collection('savedPosts').doc(postId);
+
+        if (saved) {
+            await savedRef.delete();
+        } else {
+            await Fire.shared.savePost(postId);
+        }
+
+        fetchPosts();
     };
 
     useEffect(() => {
@@ -130,6 +147,9 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity onPress={() => navigation.navigate('Comments', { postId: item.id })} style={styles.iconContainer}>
                             <Ionicons name='chatbox-outline' size={24} color='#73788B' style={{ marginRight: 8 }} />
                             <Text>{item.commentsCount}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleSave(item.id, item.saved)} style={styles.iconContainer}>
+                            <Ionicons name={item.saved ? 'bookmark' : 'bookmark-outline'} size={24} color={item.saved ? 'yellow' : '#73788B'} style={{ marginRight: 8 }} />
                         </TouchableOpacity>
                     </View>
                 </View>

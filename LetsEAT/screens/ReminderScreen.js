@@ -1,20 +1,24 @@
-// ReminderScreen.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Fire from '../Fire';
 import { Ionicons } from '@expo/vector-icons';
 
-const ReminderScreen = ({ navigation }) => {
+const ReminderScreen = ({ navigation, route }) => {
     const [reminders, setReminders] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
+    const { postTitle, postDate } = route.params || {};
 
     const fetchReminders = useCallback(async () => {
         setRefreshing(true);
-        const reminders = await Fire.shared.getReminders();
-        // Sort reminders by date (closest to now first)
-        reminders.sort((a, b) => a.date - b.date);
-        setReminders(reminders);
+        try {
+            const reminders = await Fire.shared.getReminders();
+            // Sort reminders by date (closest to now first)
+            reminders.sort((a, b) => a.date - b.date);
+            setReminders(reminders);
+        } catch (error) {
+            console.error("Error fetching reminders:", error);
+        }
         setRefreshing(false);
     }, []);
 
@@ -78,7 +82,10 @@ const ReminderScreen = ({ navigation }) => {
                     />
                 }
             />
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddReminder')}>
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddReminder', { postTitle, postDate })}
+            >
                 <Ionicons name="add" size={24} color="#fff" />
             </TouchableOpacity>
         </View>

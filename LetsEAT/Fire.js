@@ -58,6 +58,21 @@ class Fire {
         });
     };
 
+    savePost = async (postId) => {
+        const uid = this.uid;
+        const postRef = await this.firestore.collection('posts').doc(postId).get();
+        const postData = postRef.data();
+
+        if (!postData) {
+            throw new Error("Post not found");
+        }
+
+        await this.firestore.collection('users').doc(uid).collection('savedPosts').doc(postId).set({
+            ...postData,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    };
+
     uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
 
@@ -89,6 +104,10 @@ class Fire {
                 rej(error);
             }
         });
+    };
+
+    signOut = async () => {
+        await firebase.auth().signOut();
     };
 
     get firestore() {

@@ -132,6 +132,11 @@ const HomeScreen = ({ navigation }) => {
         });
     };
 
+    const getDirection = (post) => {
+        setModalVisible(false);
+        openGoogleMaps(post.locationLink);
+    };
+
     const openGoogleMaps = (link) => {
         if (typeof link === 'string' && link) {
             Linking.openURL(link).catch(err => console.error("Couldn't load page", err));
@@ -173,7 +178,6 @@ const HomeScreen = ({ navigation }) => {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => openGoogleMaps(item.locationLink)} style={styles.iconContainer}>
                             <Ionicons name="navigate" size={24} color="#73788B" style={{ marginRight: 8 }} />
-                            <Text>Get Directions</Text>
                         </TouchableOpacity>
                     </View>
                     {item.date && <Text style={styles.period}>{moment(item.date).format('MM/DD/YYYY, h:mm:ss a')}</Text>}
@@ -229,6 +233,12 @@ const HomeScreen = ({ navigation }) => {
                             onPress={() => addReminder(selectedPost)}
                         >
                             <Text style={styles.textStyle}>Add Reminder</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => getDirection(selectedPost)}
+                        >
+                            <Text style={styles.textStyle}>Get Direction</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.button, styles.buttonClose]}
@@ -308,8 +318,8 @@ const styles = StyleSheet.create({
         color: '#838899'
     },
     postImage: {
-        width: undefined,
-        height: 150,
+        width: '100%',
+        height: 200,
         borderRadius: 5,
         marginVertical: 16
     },

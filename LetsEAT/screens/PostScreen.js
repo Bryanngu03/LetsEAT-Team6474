@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert, Linking } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert, Linking, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Fire from "../Fire";
 import * as ImagePicker from "expo-image-picker";
@@ -101,71 +101,73 @@ export default class PostScreen extends React.Component {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.inputContainer}>
-                    <Image source={this.state.user.avatar ? { uri: this.state.user.avatar } : require("../assets/tempAvatar2.jpg")} style={styles.avatar}></Image>
-                    <TextInput
-                        autoFocus={true}
-                        multiline={true}
-                        numberOfLines={4}
-                        style={{ flex: 1 }}
-                        placeholder="Want to share something?"
-                        onChangeText={text => this.setState({ text })}
-                        value={this.state.text}
-                    ></TextInput>
-                    <TouchableOpacity style={styles.photo} onPress={this.pickImage}>
-                        <Ionicons name="camera" size={32} color="#D8D9DB"></Ionicons>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={{ marginHorizontal: 32, marginTop: 16, height: 200 }}>
-                    {this.state.image && <Image source={{ uri: this.state.image }} style={{ width: "100%", height: "100%", resizeMode: 'contain' }}></Image>}
-                </View>
-
-                <View style={styles.extraInputContainer}>
-                    <Text style={styles.label}>Date & Time</Text>
-                    <View style={styles.dateTimeContainer}>
-                        <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showDatePicker: true })}>
-                            <Text>{this.state.date.toLocaleDateString()}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showTimePicker: true })}>
-                            <Text>{this.state.date.toLocaleTimeString()}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {this.state.showDatePicker && (
-                        <DateTimePicker
-                            value={this.state.date}
-                            mode="date"
-                            display="default"
-                            onChange={this.onDateChange}
-                        />
-                    )}
-                    {this.state.showTimePicker && (
-                        <DateTimePicker
-                            value={this.state.date}
-                            mode="time"
-                            display="default"
-                            onChange={this.onTimeChange}
-                        />
-                    )}
-                    <Text style={styles.label}>Location</Text>
-                    <TextInput
-                        style={styles.locationNameInput}
-                        placeholder="Enter Location Name"
-                        onChangeText={locationName => this.setState({ locationName })}
-                        value={this.state.locationName}
-                    />
-                    <View style={styles.locationContainer}>
+                <ScrollView>
+                    <View style={styles.inputContainer}>
+                        <Image source={this.state.user.avatar ? { uri: this.state.user.avatar } : require("../assets/tempAvatar2.jpg")} style={styles.avatar}></Image>
                         <TextInput
-                            style={styles.locationInput}
-                            placeholder="Paste Google Maps link here"
-                            onChangeText={locationLink => this.setState({ locationLink })}
-                            value={this.state.locationLink}
-                        />
-                        <TouchableOpacity style={styles.findButton} onPress={this.openGoogleMaps}>
-                            <Text style={styles.findButtonText}>Find</Text>
+                            autoFocus={true}
+                            multiline={true}
+                            numberOfLines={4}
+                            style={{ flex: 1 }}
+                            placeholder="Want to share something?"
+                            onChangeText={text => this.setState({ text })}
+                            value={this.state.text}
+                        ></TextInput>
+                        <TouchableOpacity style={styles.photo} onPress={this.pickImage}>
+                            <Ionicons name="camera" size={32} color="#D8D9DB"></Ionicons>
                         </TouchableOpacity>
                     </View>
-                </View>
+
+                    <View style={{ marginHorizontal: 32, marginTop: 16, height: 200 }}>
+                        {this.state.image && <Image source={{ uri: this.state.image }} style={{ width: "100%", height: "100%", resizeMode: 'contain' }}></Image>}
+                    </View>
+
+                    <View style={styles.extraInputContainer}>
+                        <Text style={styles.label}>Date & Time</Text>
+                        <View style={styles.dateTimeContainer}>
+                            <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showDatePicker: true })}>
+                                <Text>{this.state.date.toLocaleDateString()}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showTimePicker: true })}>
+                                <Text>{this.state.date.toLocaleTimeString()}</Text>
+                            </TouchableOpacity>
+                        </View>
+                        {this.state.showDatePicker && (
+                            <DateTimePicker
+                                value={this.state.date}
+                                mode="date"
+                                display="default"
+                                onChange={this.onDateChange}
+                            />
+                        )}
+                        {this.state.showTimePicker && (
+                            <DateTimePicker
+                                value={this.state.date}
+                                mode="time"
+                                display="default"
+                                onChange={this.onTimeChange}
+                            />
+                        )}
+                        <Text style={styles.label}>Location</Text>
+                        <TextInput
+                            style={styles.locationNameInput}
+                            placeholder="Enter Location Name"
+                            onChangeText={locationName => this.setState({ locationName })}
+                            value={this.state.locationName}
+                        />
+                        <View style={styles.locationContainer}>
+                            <TextInput
+                                style={styles.locationInput}
+                                placeholder="Paste Google Maps link here"
+                                onChangeText={locationLink => this.setState({ locationLink })}
+                                value={this.state.locationLink}
+                            />
+                            <TouchableOpacity style={styles.findButton} onPress={this.openGoogleMaps}>
+                                <Text style={styles.findButtonText}>Find</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         );
     }
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         margin: 32,
         flexDirection: "row",
-        alignItems: "center" // Align items center
+        alignItems: "center" 
     },
     avatar: {
         width: 48,
@@ -213,7 +215,7 @@ const styles = StyleSheet.create({
         marginRight: 16
     },
     photo: {
-        marginLeft: 16, // Add margin left to separate from the text input
+        marginLeft: 16, 
     },
     extraInputContainer: {
         marginHorizontal: 32,
@@ -235,7 +237,7 @@ const styles = StyleSheet.create({
         padding: 8,
         borderRadius: 4,
         width: "48%",
-        fontSize: 12 // Adjusted font size
+        fontSize: 12 
     },
     locationNameInput: {
         borderWidth: 1,
@@ -243,7 +245,7 @@ const styles = StyleSheet.create({
         padding: 8,
         borderRadius: 4,
         marginBottom: 16,
-        fontSize: 14
+        fontSize: 10
     },
     locationContainer: {
         flexDirection: "row",
@@ -256,7 +258,7 @@ const styles = StyleSheet.create({
         padding: 8,
         borderRadius: 4,
         width: "75%",
-        fontSize: 14
+        fontSize: 10
     },
     findButton: {
         backgroundColor: "#2196F3",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Modal, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
@@ -28,6 +28,9 @@ const HomeScreen = ({ navigation }) => {
                         image: data.image || '',
                         text: data.text || '',
                         timestamp: data.timestamp || 0,
+                        date: data.date || null,
+                        locationName: data.locationName || '',
+                        locationLink: data.locationLink || '',
                         uid: data.uid || '',
                         name: userData ? userData.name : 'Unknown',
                         avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg',
@@ -121,7 +124,6 @@ const HomeScreen = ({ navigation }) => {
         setModalVisible(true);
     };
 
-<<<<<<< HEAD
     const addReminder = (post) => {
         setModalVisible(false);
         navigation.navigate('AddReminder', {
@@ -143,8 +145,6 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-=======
->>>>>>> parent of 33209da (Implemented ADdd Reminder and Get Direction)
     const renderPost = ({ item }) => {
         return (
             <View style={styles.feedItem}>
@@ -154,6 +154,7 @@ const HomeScreen = ({ navigation }) => {
                         <View>
                             <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
+                            {item.locationName && <Text style={styles.location}>{item.locationName}</Text>}
                         </View>
                         <TouchableOpacity onPress={() => openModal(item)}>
                             <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
@@ -176,12 +177,9 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity onPress={() => handleSave(item.id, item.saved)} style={styles.iconContainer}>
                             <Ionicons name={item.saved ? 'bookmark' : 'bookmark-outline'} size={24} color={item.saved ? 'yellow' : '#73788B'} style={{ marginRight: 8 }} />
                         </TouchableOpacity>
-<<<<<<< HEAD
                         <TouchableOpacity onPress={() => openGoogleMaps(item.locationLink)} style={styles.iconContainer}>
                             <Ionicons name="navigate" size={24} color="#73788B" style={{ marginRight: 8 }} />
                         </TouchableOpacity>
-=======
->>>>>>> parent of 33209da (Implemented ADdd Reminder and Get Direction)
                     </View>
                 </View>
             </View>
@@ -232,7 +230,6 @@ const HomeScreen = ({ navigation }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.button, styles.buttonClose]}
-<<<<<<< HEAD
                             onPress={() => addReminder(selectedPost)}
                         >
                             <Text style={styles.textStyle}>Add Reminder</Text>
@@ -245,8 +242,6 @@ const HomeScreen = ({ navigation }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.button, styles.buttonClose]}
-=======
->>>>>>> parent of 33209da (Implemented ADdd Reminder and Get Direction)
                             onPress={() => setModalVisible(!modalVisible)}
                         >
                             <Text style={styles.textStyle}>Cancel</Text>
@@ -305,6 +300,16 @@ const styles = StyleSheet.create({
     timestamp: {
         fontSize: 11,
         color: '#C4C6CE',
+        marginTop: 4
+    },
+    date: {
+        fontSize: 11,
+        color: '#73788B',
+        marginTop: 4
+    },
+    location: {
+        fontSize: 11,
+        color: '#73788B',
         marginTop: 4
     },
     post: {
@@ -368,11 +373,7 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         textAlign: 'center'
-<<<<<<< HEAD
     },
-=======
-    }
->>>>>>> parent of 33209da (Implemented ADdd Reminder and Get Direction)
 });
 
 export default HomeScreen;

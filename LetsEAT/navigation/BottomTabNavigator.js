@@ -1,3 +1,4 @@
+// navigation/BottomTabNavigator.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -22,7 +23,7 @@ const HomeStackScreen = () => (
 );
 
 const ReminderStackScreen = () => (
-    <ReminderStack.Navigator initialRouteName="ReminderScreen">
+    <ReminderStack.Navigator>
         <ReminderStack.Screen name="ReminderScreen" component={ReminderScreen} options={{ headerShown: false }} />
         <ReminderStack.Screen name="AddReminder" component={AddReminderScreen} />
     </ReminderStack.Navigator>
@@ -32,7 +33,6 @@ const BottomTabNavigator = () => {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
-                lazy: false,
                 tabBarIcon: ({ color, size }) => {
                     let iconName;
 

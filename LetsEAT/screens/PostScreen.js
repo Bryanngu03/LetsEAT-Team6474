@@ -42,7 +42,6 @@ export default class PostScreen extends React.Component {
                 localUri: this.state.image,
                 likes: 0,
                 commentsCount: 0,
-                timestamp: Date.now(),
                 date: this.state.date.getTime(),
                 locationLink: this.state.locationLink,
                 locationName: this.state.locationName

@@ -164,6 +164,7 @@ const HomeScreen = ({ navigation }) => {
                     {item.image ? (
                         <Image source={{ uri: item.image }} style={styles.postImage} resizeMode='cover' />
                     ) : null}
+                    <Text style={styles.period}>Period: {moment(item.date).format('MM/DD/YYYY, h:mm:ss a')}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity onPress={() => handleLike(item.id, item.liked)} style={styles.iconContainer}>
                             <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={24} color={item.liked ? 'red' : '#73788B'} style={{ marginRight: 8 }} />
@@ -180,7 +181,6 @@ const HomeScreen = ({ navigation }) => {
                             <Ionicons name="navigate" size={24} color="#73788B" style={{ marginRight: 8 }} />
                         </TouchableOpacity>
                     </View>
-                    {item.date && <Text style={styles.period}>{moment(item.date).format('MM/DD/YYYY, h:mm:ss a')}</Text>}
                 </View>
             </View>
         );
@@ -323,6 +323,12 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginVertical: 16
     },
+    period: {
+        fontSize: 14,
+        color: '#454D65',
+        marginTop: 8,
+        marginBottom: 8
+    },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -368,11 +374,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center'
     },
-    period: {
-        fontSize: 11,
-        color: '#73788B',
-        marginTop: 4
-    }
 });
 
 export default HomeScreen;

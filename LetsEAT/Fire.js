@@ -22,8 +22,8 @@ class Fire {
             return this.firestore.collection('posts').add({
                 text,
                 uid: this.uid,
-                timestamp: this.timestamp,
-                date: firebase.firestore.Timestamp.fromDate(date),
+                timestamp: Date.now(),
+                date, // UNIX timestamp directly
                 image: remoteUri,
                 name: userData.name,
                 avatar: userData.avatar,
@@ -52,8 +52,8 @@ class Fire {
         await this.firestore.collection('users').doc(uid).collection('reminders').add({
             title,
             description,
-            date,
-            timestamp: this.timestamp,
+            date, // UNIX timestamp directly
+            timestamp: Date.now(),
             uid
         });
     };

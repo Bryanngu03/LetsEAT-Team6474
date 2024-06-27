@@ -1,16 +1,22 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, Image, Alert, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Fire from "../Fire";
 import * as ImagePicker from "expo-image-picker";
 import UserPermissions from "../utilities/UserPermissions";
 import { db } from '../firebase';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default class PostScreen extends React.Component {
     state = {
         text: "",
         image: null,
-        user: {}
+        user: {},
+        date: new Date(),
+        showDatePicker: false,
+        showTimePicker: false,
+        locationLink: "",
+        locationName: ""
     };
 
     componentDidMount() {
@@ -31,14 +37,18 @@ export default class PostScreen extends React.Component {
         }
 
         Fire.shared
-            .addPost({ 
-                text: this.state.text.trim(), 
-                localUri: this.state.image, 
-                likes: 0, 
-                commentsCount: 0 
+            .addPost({
+                text: this.state.text.trim(),
+                localUri: this.state.image,
+                likes: 0,
+                commentsCount: 0,
+                timestamp: Date.now(),
+                date: this.state.date.getTime(),
+                locationLink: this.state.locationLink,
+                locationName: this.state.locationName
             })
             .then(ref => {
-                this.setState({ text: "", image: null });
+                this.setState({ text: "", image: null, date: new Date(), locationLink: "", locationName: "" });
                 this.props.navigation.goBack();
             })
             .catch(error => {
@@ -48,7 +58,7 @@ export default class PostScreen extends React.Component {
 
     pickImage = async () => {
         UserPermissions.getCameraPermission();
-        
+
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -59,6 +69,21 @@ export default class PostScreen extends React.Component {
             const uri = result.assets && result.assets.length > 0 ? result.assets[0].uri : result.uri;
             this.setState({ image: uri });
         }
+    };
+
+    onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || this.state.date;
+        this.setState({ showDatePicker: false, date: new Date(currentDate.setHours(this.state.date.getHours(), this.state.date.getMinutes())) });
+    };
+
+    onTimeChange = (event, selectedTime) => {
+        const currentDate = selectedTime || this.state.date;
+        this.setState({ showTimePicker: false, date: new Date(this.state.date.setHours(currentDate.getHours(), currentDate.getMinutes())) });
+    };
+
+    openGoogleMaps = () => {
+        const url = "https://maps.google.com";
+        Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
     };
 
     render() {
@@ -87,14 +112,59 @@ export default class PostScreen extends React.Component {
                         onChangeText={text => this.setState({ text })}
                         value={this.state.text}
                     ></TextInput>
+                    <TouchableOpacity style={styles.photo} onPress={this.pickImage}>
+                        <Ionicons name="camera" size={32} color="#D8D9DB"></Ionicons>
+                    </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.photo} onPress={this.pickImage}>
-                    <Ionicons name="camera" size={32} color="#D8D9DB"></Ionicons>
-                </TouchableOpacity>
+                <View style={{ marginHorizontal: 32, marginTop: 16, height: 200 }}>
+                    {this.state.image && <Image source={{ uri: this.state.image }} style={{ width: "100%", height: "100%", resizeMode: 'contain' }}></Image>}
+                </View>
 
-                <View style={{ marginHorizontal: 32, marginTop: 32, height: 150 }}>
-                    {this.state.image && <Image source={{ uri: this.state.image }} style={{ width: "100%", height: "100%" }}></Image>}
+                <View style={styles.extraInputContainer}>
+                    <Text style={styles.label}>Date & Time</Text>
+                    <View style={styles.dateTimeContainer}>
+                        <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showDatePicker: true })}>
+                            <Text>{this.state.date.toLocaleDateString()}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.dateTimePicker} onPress={() => this.setState({ showTimePicker: true })}>
+                            <Text>{this.state.date.toLocaleTimeString()}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {this.state.showDatePicker && (
+                        <DateTimePicker
+                            value={this.state.date}
+                            mode="date"
+                            display="default"
+                            onChange={this.onDateChange}
+                        />
+                    )}
+                    {this.state.showTimePicker && (
+                        <DateTimePicker
+                            value={this.state.date}
+                            mode="time"
+                            display="default"
+                            onChange={this.onTimeChange}
+                        />
+                    )}
+                    <Text style={styles.label}>Location</Text>
+                    <TextInput
+                        style={styles.locationNameInput}
+                        placeholder="Enter Location Name"
+                        onChangeText={locationName => this.setState({ locationName })}
+                        value={this.state.locationName}
+                    />
+                    <View style={styles.locationContainer}>
+                        <TextInput
+                            style={styles.locationInput}
+                            placeholder="Paste Google Maps link here"
+                            onChangeText={locationLink => this.setState({ locationLink })}
+                            value={this.state.locationLink}
+                        />
+                        <TouchableOpacity style={styles.findButton} onPress={this.openGoogleMaps}>
+                            <Text style={styles.findButtonText}>Find</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </SafeAreaView>
         );
@@ -133,7 +203,8 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         margin: 32,
-        flexDirection: "row"
+        flexDirection: "row",
+        alignItems: "center" // Align items center
     },
     avatar: {
         width: 48,
@@ -142,7 +213,62 @@ const styles = StyleSheet.create({
         marginRight: 16
     },
     photo: {
-        alignItems: "flex-end",
-        marginHorizontal: 32
+        marginLeft: 16, // Add margin left to separate from the text input
+    },
+    extraInputContainer: {
+        marginHorizontal: 32,
+        marginTop: 16
+    },
+    label: {
+        fontSize: 14,
+        marginBottom: 8,
+        fontWeight: '600',
+    },
+    dateTimeContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 16,
+    },
+    dateTimePicker: {
+        borderWidth: 1,
+        borderColor: "#D8D9DB",
+        padding: 8,
+        borderRadius: 4,
+        width: "48%",
+        fontSize: 12 // Adjusted font size
+    },
+    locationNameInput: {
+        borderWidth: 1,
+        borderColor: "#D8D9DB",
+        padding: 8,
+        borderRadius: 4,
+        marginBottom: 16,
+        fontSize: 14
+    },
+    locationContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 16,
+    },
+    locationInput: {
+        borderWidth: 1,
+        borderColor: "#D8D9DB",
+        padding: 8,
+        borderRadius: 4,
+        width: "75%",
+        fontSize: 14
+    },
+    findButton: {
+        backgroundColor: "#2196F3",
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 4,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    findButtonText: {
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 14
     }
 });

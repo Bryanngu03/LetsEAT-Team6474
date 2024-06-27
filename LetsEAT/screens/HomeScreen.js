@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Modal, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { db } from '../firebase';
@@ -28,6 +28,9 @@ const HomeScreen = ({ navigation }) => {
                         image: data.image || '',
                         text: data.text || '',
                         timestamp: data.timestamp || 0,
+                        date: data.date || null,
+                        locationName: data.locationName || '',
+                        locationLink: data.locationLink || '',
                         uid: data.uid || '',
                         name: userData ? userData.name : 'Unknown',
                         avatar: userData ? userData.avatar : '../assets/tempAvatar.jpg',
@@ -121,6 +124,22 @@ const HomeScreen = ({ navigation }) => {
         setModalVisible(true);
     };
 
+    const addReminder = (post) => {
+        setModalVisible(false);
+        navigation.navigate('AddReminder', {
+            postTitle: post.text,
+            postDate: post.date
+        });
+    };
+
+    const openGoogleMaps = (link) => {
+        if (typeof link === 'string' && link) {
+            Linking.openURL(link).catch(err => console.error("Couldn't load page", err));
+        } else {
+            Alert.alert('Invalid URL', 'The provided link is not valid.');
+        }
+    };
+
     const renderPost = ({ item }) => {
         return (
             <View style={styles.feedItem}>
@@ -130,6 +149,7 @@ const HomeScreen = ({ navigation }) => {
                         <View>
                             <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
+                            {item.locationName && <Text style={styles.location}>{item.locationName}</Text>}
                         </View>
                         <TouchableOpacity onPress={() => openModal(item)}>
                             <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
@@ -151,7 +171,12 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity onPress={() => handleSave(item.id, item.saved)} style={styles.iconContainer}>
                             <Ionicons name={item.saved ? 'bookmark' : 'bookmark-outline'} size={24} color={item.saved ? 'yellow' : '#73788B'} style={{ marginRight: 8 }} />
                         </TouchableOpacity>
+                        <TouchableOpacity onPress={() => openGoogleMaps(item.locationLink)} style={styles.iconContainer}>
+                            <Ionicons name="navigate" size={24} color="#73788B" style={{ marginRight: 8 }} />
+                            <Text>Get Directions</Text>
+                        </TouchableOpacity>
                     </View>
+                    {item.date && <Text style={styles.period}>{moment(item.date).format('MM/DD/YYYY, h:mm:ss a')}</Text>}
                 </View>
             </View>
         );
@@ -198,6 +223,12 @@ const HomeScreen = ({ navigation }) => {
                             onPress={() => handleDelete(selectedPost.id, selectedPost.uid)}
                         >
                             <Text style={styles.textStyle}>Delete</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => addReminder(selectedPost)}
+                        >
+                            <Text style={styles.textStyle}>Add Reminder</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.button, styles.buttonClose]}
@@ -261,6 +292,16 @@ const styles = StyleSheet.create({
         color: '#C4C6CE',
         marginTop: 4
     },
+    date: {
+        fontSize: 11,
+        color: '#73788B',
+        marginTop: 4
+    },
+    location: {
+        fontSize: 11,
+        color: '#73788B',
+        marginTop: 4
+    },
     post: {
         marginTop: 16,
         fontSize: 14,
@@ -316,6 +357,11 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         textAlign: 'center'
+    },
+    period: {
+        fontSize: 11,
+        color: '#73788B',
+        marginTop: 4
     }
 });
 

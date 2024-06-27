@@ -1,4 +1,7 @@
-import { firebase } from './firebase';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
 
 class Fire {
     constructor() {
@@ -7,47 +10,7 @@ class Fire {
         }
     }
 
-    // Method to create or get chat ID based on participants
-    getOrCreateChatId = async (userId1, userId2) => {
-        const chatId = `${userId1}_${userId2}`;
-        const reverseChatId = `${userId2}_${userId1}`;
-        let chatDoc = await this.firestore.collection('chats').doc(chatId).get();
-
-        if (!chatDoc.exists) {
-            chatDoc = await this.firestore.collection('chats').doc(reverseChatId).get();
-            if (!chatDoc.exists) {
-                await this.firestore.collection('chats').doc(chatId).set({
-                    participants: [userId1, userId2],
-                    latestMessage: '',
-                    latestMessageTimestamp: Date.now(),
-                });
-                return chatId;
-            } else {
-                return reverseChatId;
-            }
-        } else {
-            return chatId;
-        }
-    };
-
-    sendMessage = async (chatId, message) => {
-        const chatDocRef = this.firestore.collection('chats').doc(chatId);
-        const messagesCollection = chatDocRef.collection('messages');
-
-        await messagesCollection.add({
-            text: message.text,
-            sender: message.sender,
-            receiver: message.receiver,
-            timestamp: this.timestamp,
-        });
-
-        await chatDocRef.update({
-            latestMessage: message.text,
-            latestMessageTimestamp: this.timestamp,
-        });
-    };
-
-    addPost = async ({ text, localUri, likes, commentsCount }) => {
+    addPost = async ({ text, localUri, likes, commentsCount, date, locationLink, locationName }) => {
         if (!localUri) {
             throw new Error("No localUri provided");
         }
@@ -56,29 +19,43 @@ class Fire {
             const userDoc = await this.firestore.collection('users').doc(this.uid).get();
             const userData = userDoc.data();
 
-            return new Promise((res, rej) => {
-                this.firestore
-                    .collection('posts')
-                    .add({
-                        text,
-                        uid: this.uid,
-                        timestamp: this.timestamp,
-                        image: remoteUri,
-                        name: userData.name,
-                        avatar: userData.avatar,
-                        likes,
-                        commentsCount
-                    })
-                    .then(ref => {
-                        res(ref);
-                    })
-                    .catch(error => {
-                        rej(error);
-                    });
+            return this.firestore.collection('posts').add({
+                text,
+                uid: this.uid,
+                timestamp: this.timestamp,
+                date: firebase.firestore.Timestamp.fromDate(date),
+                image: remoteUri,
+                name: userData.name,
+                avatar: userData.avatar,
+                likes,
+                commentsCount,
+                locationLink,
+                locationName
             });
         } catch (error) {
             throw error;
         }
+    };
+
+    getReminders = async () => {
+        const uid = this.uid;
+        const reminders = [];
+        const querySnapshot = await this.firestore.collection('users').doc(uid).collection('reminders').get();
+        querySnapshot.forEach(doc => {
+            reminders.push({ id: doc.id, ...doc.data() });
+        });
+        return reminders;
+    };
+
+    addReminder = async ({ title, description, date }) => {
+        const uid = this.uid;
+        await this.firestore.collection('users').doc(uid).collection('reminders').add({
+            title,
+            description,
+            date,
+            timestamp: this.timestamp,
+            uid
+        });
     };
 
     uploadPhotoAsync = async (uri, filename) => {
@@ -95,10 +72,7 @@ class Fire {
                 }
                 const file = await response.blob();
 
-                let upload = firebase
-                    .storage()
-                    .ref(path)
-                    .put(file);
+                let upload = firebase.storage().ref(path).put(file);
 
                 upload.on(
                     'state_changed',
@@ -117,107 +91,6 @@ class Fire {
         });
     };
 
-    createUser = async user => {
-        let remoteUri = null;
-
-        try {
-            await firebase.auth().createUserWithEmailAndPassword(user.email, user.password);
-
-            let db = this.firestore.collection("users").doc(this.uid);
-
-            db.set({
-                name: user.name,
-                email: user.email,
-                avatar: null
-            });
-
-            if (user.avatar) {
-                remoteUri = await this.uploadPhotoAsync(user.avatar, `avatars/${this.uid}`);
-
-                db.set({ avatar: remoteUri }, { merge: true });
-            }
-        } catch (error) {
-            alert("Error: ", error);
-        }
-    };
-
-    signOut = () => {
-        firebase.auth().signOut();
-    };
-
-    addReminder = async ({ title, description, date }) => {
-        const user = firebase.auth().currentUser;
-        if (!user) throw new Error("User not authenticated");
-
-        return new Promise((res, rej) => {
-            this.firestore
-                .collection('users')
-                .doc(user.uid)
-                .collection('reminders')
-                .add({
-                    title,
-                    description,
-                    date: date.getTime(),
-                    uid: user.uid,
-                    timestamp: this.timestamp,
-                })
-                .then(ref => {
-                    res(ref);
-                })
-                .catch(error => {
-                    rej(error);
-                });
-        });
-    };
-
-    getReminders = async () => {
-        const user = firebase.auth().currentUser;
-        if (!user) throw new Error("User not authenticated");
-
-        const snapshot = await this.firestore
-            .collection('users')
-            .doc(user.uid)
-            .collection('reminders')
-            .orderBy('timestamp', 'desc')
-            .get();
-
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    };
-
-    // Delete reminder
-    deleteReminder = async (id) => {
-        const user = firebase.auth().currentUser;
-        if (!user) throw new Error("User not authenticated");
-
-        return new Promise((res, rej) => {
-            this.firestore
-                .collection('users')
-                .doc(user.uid)
-                .collection('reminders')
-                .doc(id)
-                .delete()
-                .then(() => {
-                    res();
-                })
-                .catch(error => {
-                    rej(error);
-                });
-        });
-    };
-
-    savePost = async (postId) => {
-        const user = firebase.auth().currentUser;
-        if (!user) throw new Error("User not authenticated");
-
-        const postRef = this.firestore.collection('posts').doc(postId);
-        const postDoc = await postRef.get();
-
-        if (!postDoc.exists) throw new Error("Post not found");
-
-        const savedPostsRef = this.firestore.collection('users').doc(user.uid).collection('savedPosts').doc(postId);
-        await savedPostsRef.set(postDoc.data());
-    };
-
     get firestore() {
         return firebase.firestore();
     }
@@ -227,7 +100,7 @@ class Fire {
     }
 
     get timestamp() {
-        return Date.now();
+        return firebase.firestore.Timestamp.now();
     }
 }
 

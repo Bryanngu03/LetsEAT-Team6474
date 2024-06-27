@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from 'react';
+// AddReminderScreen.js
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fire from '../Fire';
 
-const AddReminderScreen = ({ navigation, route }) => {
-    const { postTitle, postDate } = route.params || {};
-    const [title, setTitle] = useState(postTitle || '');
+const AddReminderScreen = ({ navigation }) => {
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [date, setDate] = useState(postDate ? new Date(postDate) : new Date());
+    const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
     const [mode, setMode] = useState('date');
 
-    useEffect(() => {
-        if (postTitle) setTitle(postTitle);
-        if (postDate) setDate(new Date(postDate));
-    }, [postTitle, postDate]);
-
     const handleAddReminder = async () => {
-        await Fire.shared.addReminder({ title, description, date: date.getTime() });
+        await Fire.shared.addReminder({ title, description, date });
         navigation.goBack(); // Go back to the previous screen
     };
 

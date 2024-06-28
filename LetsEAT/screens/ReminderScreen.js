@@ -13,7 +13,6 @@ const ReminderScreen = ({ navigation, route }) => {
         setRefreshing(true);
         try {
             const reminders = await Fire.shared.getReminders();
-            // Sort reminders by date (closest to now first)
             reminders.sort((a, b) => a.date - b.date);
             setReminders(reminders);
         } catch (error) {
@@ -49,8 +48,12 @@ const ReminderScreen = ({ navigation, route }) => {
     };
 
     const deleteReminder = async (id) => {
-        await Fire.shared.deleteReminder(id);
-        fetchReminders(); // Refresh reminders list after deletion
+        try {
+            await Fire.shared.deleteReminder(id);
+            fetchReminders(); // Refresh reminders list after deletion
+        } catch (error) {
+            console.error("Error deleting reminder:", error);
+        }
     };
 
     const renderItem = ({ item }) => (

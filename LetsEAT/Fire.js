@@ -58,6 +58,15 @@ class Fire {
         });
     };
 
+    deleteReminder = async (id) => {
+        const uid = this.uid;
+        try {
+            await this.firestore.collection('users').doc(uid).collection('reminders').doc(id).delete();
+        } catch (error) {
+            throw error;
+        }
+    };
+
     savePost = async (postId) => {
         const uid = this.uid;
         const postRef = await this.firestore.collection('posts').doc(postId).get();

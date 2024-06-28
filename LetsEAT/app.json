@@ -2,11 +2,7 @@
   "expo": {
     "name": "LetsEAT",
     "slug": "LetsEAT",
-<<<<<<< Updated upstream
-    "version": "1.0.0",
-=======
     "version": "2.1.0",
->>>>>>> Stashed changes
     "plugins": [
       "expo-font"
     ],

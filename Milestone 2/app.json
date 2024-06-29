@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "LetsEAT",
+    "slug": "LetsEAT",
+    "version": "2.2.0",
+    "plugins": [
+      "expo-font"
+    ],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "permissions": [
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.LetsEAT",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload pictures."
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c779b40e-2280-437d-9c0f-f0417c4ef97e"
+      }
+    },
+    "runtimeVersion": "2.2.0",
+    "updates": {
+      "url": "https://u.expo.dev/c779b40e-2280-437d-9c0f-f0417c4ef97e"
+    }
+  }
+}

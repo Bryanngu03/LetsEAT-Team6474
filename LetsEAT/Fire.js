@@ -10,6 +10,27 @@ class Fire {
         }
     }
 
+    createUser = async (user) => {
+        try {
+            const { email, password, name, avatar } = user;
+            const response = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            const uid = response.user.uid;
+
+            let remoteUri = null;
+            if (avatar) {
+                remoteUri = await this.uploadPhotoAsync(avatar, `avatars/${uid}`);
+            }
+
+            await firebase.firestore().collection('users').doc(uid).set({
+                name,
+                email,
+                avatar: remoteUri
+            });
+        } catch (error) {
+            throw error;
+        }
+    };
+
     addPost = async ({ text, localUri, likes, commentsCount, date, locationLink, locationName }) => {
         if (!localUri) {
             throw new Error("No localUri provided");

@@ -96,11 +96,10 @@ const MessageListScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#EBECF4',
     },
     tabHeader: {
-        paddingTop: 16,
+        paddingTop: 30,
         paddingBottom: 16,
         backgroundColor: '#FFF',
         alignItems: 'center',
@@ -112,6 +111,7 @@ const styles = StyleSheet.create({
         shadowRadius: 15,
         shadowOpacity: 0.2,
         zIndex: 10,
+        width: '100%',
     },
     tabHeaderTitle: {
         fontSize: 20,

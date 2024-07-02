@@ -1,10 +1,12 @@
-// ProfileScreen.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, Clipboard, FlatList, RefreshControl, Dimensions } from 'react-native';
 import { firebase } from '../firebase';
 import Fire from '../Fire';
+import { Ionicons } from '@expo/vector-icons';
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
+import * as ImagePicker from 'expo-image-picker';
 
-const { width } = Dimensions.get('window'); // Get the width of the screen
+const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -66,10 +68,65 @@ const ProfileScreen = ({ navigation }) => {
     Alert.alert('Copied to Clipboard', 'User ID has been copied to clipboard.');
   };
 
+  const confirmDelete = (id) => {
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this post?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "Delete", onPress: () => deleteSavedPost(id) }
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const deleteSavedPost = async (id) => {
+    try {
+      await Fire.shared.deleteSavedPost(id);
+      fetchSavedPosts(); 
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchSavedPosts().then(() => setRefreshing(false));
   }, []);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets && result.assets.length > 0 ? result.assets[0].uri : result.uri;
+      const userId = firebase.auth().currentUser?.uid;
+      const remoteUri = await Fire.shared.uploadPhotoAsync(uri, `avatars/${userId}`);
+      await firebase.firestore().collection('users').doc(userId).update({ avatar: remoteUri });
+      setUser({ ...user, avatar: remoteUri });
+      Alert.alert('Success', 'Avatar updated successfully.');
+    }
+  };
+
+  const resetPassword = async () => {
+    const user = firebase.auth().currentUser;
+    if (user) {
+      try {
+        await firebase.auth().sendPasswordResetEmail(user.email);
+        Alert.alert('Success', 'Password reset email sent.');
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -93,6 +150,9 @@ const ProfileScreen = ({ navigation }) => {
       <View style={{ flex: 1 }}>
         <Text style={styles.savedPostText}>{item.text}</Text>
       </View>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
+        <Ionicons name="close-circle-outline" size={24} color="red" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -100,6 +160,16 @@ const ProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.tabHeader}>
         <Text style={styles.tabHeaderTitle}>Profile</Text>
+        <Menu>
+          <MenuTrigger>
+            <Ionicons name="settings-outline" size={24} color="#333" />
+          </MenuTrigger>
+          <MenuOptions customStyles={menuOptionsStyles}>
+            <MenuOption onSelect={pickImage} text="Switch Icon" />
+            <MenuOption onSelect={resetPassword} text="Reset Password" />
+            <MenuOption onSelect={handleLogout} text="Log Out" />
+          </MenuOptions>
+        </Menu>
       </View>
       {user?.avatar ? (
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
@@ -116,9 +186,6 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.copyButtonText}>Copy</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
       <FlatList
         data={savedPosts}
         renderItem={renderSavedPost}
@@ -140,11 +207,24 @@ const ProfileScreen = ({ navigation }) => {
   );
 };
 
+const menuOptionsStyles = {
+  optionsContainer: {
+    padding: 10,
+    width: 200,
+  },
+  optionWrapper: {
+    padding: 10,
+  },
+  optionText: {
+    fontSize: 16,
+  },
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EBECF4', // Match the background color of the whole tab
-    alignItems: 'center', // Center align content
+    backgroundColor: '#EBECF4',
+    alignItems: 'center',
   },
   tabHeader: {
     paddingTop: 30,
@@ -159,17 +239,25 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     shadowOpacity: 0.2,
     zIndex: 10,
-    width: '100%', // Ensure it spans the full width of the screen
+    width: '100%',
+    flexDirection: 'row',
+    paddingHorizontal: 16,
   },
   tabHeaderTitle: {
     fontSize: 20,
     fontWeight: '500',
+    flex: 1,
+    textAlign: 'center',
+  },
+  settingsIcon: {
+    position: 'absolute',
+    right: 16,
   },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginTop: 10, // Add margin to move the profile section down
+    marginTop: 10,
   },
   placeholder: {
     width: 100,
@@ -178,28 +266,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ccc',
-    marginTop: 20, // Add margin to move the profile section down
+    marginTop: 20,
   },
   name: {
     fontSize: 20,
     marginTop: 10,
-    textAlign: 'center', // Center align the name
+    textAlign: 'center',
   },
   email: {
     fontSize: 16,
     marginTop: 5,
-    textAlign: 'center', // Center align the email
+    textAlign: 'center',
   },
   uidContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 5,
-    justifyContent: 'center', // Center align the container
+    justifyContent: 'center',
   },
   uid: {
-    fontSize: 10,
+    fontSize: 12,
     color: 'grey',
-    textAlign: 'center', // Center align the UID
+    textAlign: 'center',
   },
   copyButton: {
     marginLeft: 10,
@@ -212,33 +300,21 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 10,
   },
-  logoutButton: {
-    marginTop: 12,
-    backgroundColor: '#E9446A',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  logoutButtonText: {
-    color: '#FFF',
-    fontWeight: '500',
-    textAlign: 'center', // Center align the logout button text
-  },
   savedPostsHeader: {
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 20,
-    textAlign: 'center', // Center align the header
+    textAlign: 'center',
   },
   savedPostItem: {
     flexDirection: 'row',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    width: width - 20, // Adjust the width to take the whole screen minus some padding
+    width: width - 20,
     marginHorizontal: 10,
     borderRadius: 5,
-    backgroundColor: '#EBECF4', // Match the background color of the whole tab
+    backgroundColor: '#EBECF4',
   },
   savedPostImage: {
     width: 60,
@@ -249,6 +325,9 @@ const styles = StyleSheet.create({
   savedPostText: {
     flex: 1,
     fontSize: 16,
+  },
+  deleteButton: {
+    padding: 8,
   },
 });
 

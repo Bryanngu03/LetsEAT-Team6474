@@ -1,7 +1,13 @@
-// App.js
 import React from 'react';
+import { MenuProvider } from 'react-native-popup-menu';
 import AuthNavigator from './navigation/AuthNavigator';
 
-export default function App() {
-  return <AuthNavigator />;
-}
+const App = () => {
+  return (
+    <MenuProvider>
+      <AuthNavigator />
+    </MenuProvider>
+  );
+};
+
+export default App;

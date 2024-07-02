@@ -5,6 +5,7 @@ import moment from 'moment';
 import { db } from '../firebase';
 import firebase from 'firebase/compat/app';
 import Fire from '../Fire';
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 
 const HomeScreen = ({ navigation }) => {
     const [posts, setPosts] = useState([]);
@@ -156,9 +157,16 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={styles.timestamp}>{moment(item.timestamp).fromNow()}</Text>
                             {item.locationName && <Text style={styles.location}>{item.locationName}</Text>}
                         </View>
-                        <TouchableOpacity onPress={() => openModal(item)}>
-                            <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
-                        </TouchableOpacity>
+                        <Menu>
+                            <MenuTrigger>
+                                <Ionicons name='ellipsis-horizontal' size={24} color='#73788B' />
+                            </MenuTrigger>
+                            <MenuOptions customStyles={menuOptionsStyles}>
+                                <MenuOption onSelect={() => handleDelete(item.id, item.uid)} text="Delete" />
+                                <MenuOption onSelect={() => addReminder(item)} text="Add Reminder" />
+                                <MenuOption onSelect={() => getDirection(item)} text="Get Direction" />
+                            </MenuOptions>
+                        </Menu>
                     </View>
                     <Text style={styles.post}>{item.text}</Text>
                     {item.image ? (
@@ -212,45 +220,21 @@ const HomeScreen = ({ navigation }) => {
                     />
                 }
             />
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}
-            >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <TouchableOpacity
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => handleDelete(selectedPost.id, selectedPost.uid)}
-                        >
-                            <Text style={styles.textStyle}>Delete</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => addReminder(selectedPost)}
-                        >
-                            <Text style={styles.textStyle}>Add Reminder</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => getDirection(selectedPost)}
-                        >
-                            <Text style={styles.textStyle}>Get Direction</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => setModalVisible(!modalVisible)}
-                        >
-                            <Text style={styles.textStyle}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
+};
+
+const menuOptionsStyles = {
+    optionsContainer: {
+        padding: 10,
+        width: 150,
+    },
+    optionWrapper: {
+        padding: 10,
+    },
+    optionText: {
+        fontSize: 16,
+    },
 };
 
 const styles = StyleSheet.create({
@@ -338,41 +322,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 16
-    },
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 22
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-    },
-    button: {
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2
-    },
-    buttonClose: {
-        backgroundColor: '#2196F3',
-        marginTop: 10
-    },
-    textStyle: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center'
     },
 });
 

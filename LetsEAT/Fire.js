@@ -103,6 +103,15 @@ class Fire {
         });
     };
 
+    deleteSavedPost = async (postId) => {
+        const uid = this.uid;
+        try {
+            await this.firestore.collection('users').doc(uid).collection('savedPosts').doc(postId).delete();
+        } catch (error) {
+            throw error;
+        }
+    };
+
     uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
 

@@ -56,6 +56,11 @@ const ReminderScreen = ({ navigation, route }) => {
         }
     };
 
+    const editReminder = async (item) => {
+        await deleteReminder(item.id);
+        navigation.navigate('AddReminder', { postTitle: item.title, postDate: item.date, postDescription: item.description });
+    };
+
     const renderItem = ({ item }) => (
         <View style={styles.reminderItem}>
             <View style={styles.reminderInfo}>
@@ -63,9 +68,14 @@ const ReminderScreen = ({ navigation, route }) => {
                 <Text style={styles.description}>{item.description}</Text>
                 <Text style={styles.date}>{new Date(item.date).toLocaleString()}</Text>
             </View>
-            <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
-                <Ionicons name="close-circle-outline" size={24} color="red" />
-            </TouchableOpacity>
+            <View style={styles.actionButtons}>
+                <TouchableOpacity style={styles.editButton} onPress={() => editReminder(item)}>
+                    <Ionicons name="pencil-outline" size={24} color="blue" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
+                    <Ionicons name="close-circle-outline" size={24} color="red" />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 
@@ -141,6 +151,12 @@ const styles = StyleSheet.create({
     date: {
         fontSize: 12,
         color: '#555',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+    },
+    editButton: {
+        padding: 8,
     },
     deleteButton: {
         padding: 8,

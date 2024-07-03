@@ -3,6 +3,10 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 
+const firebaseConfig = {
+    // Your Firebase configuration object
+};
+
 class Fire {
     constructor() {
         if (!firebase.apps.length) {
@@ -83,6 +87,20 @@ class Fire {
         const uid = this.uid;
         try {
             await this.firestore.collection('users').doc(uid).collection('reminders').doc(id).delete();
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    updateReminder = async (id, { title, description, date }) => {
+        const uid = this.uid;
+        try {
+            await this.firestore.collection('users').doc(uid).collection('reminders').doc(id).update({
+                title,
+                description,
+                date,
+                timestamp: Date.now(),
+            });
         } catch (error) {
             throw error;
         }

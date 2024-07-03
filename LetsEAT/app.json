@@ -17,7 +17,8 @@
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE",
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "NOTIFICATIONS"
       ]
     },
     "ios": {
@@ -25,7 +26,8 @@
       "bundleIdentifier": "com.yourcompany.LetsEAT",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to take photos.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload pictures."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload pictures.",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
       }
     },
     "extra": {

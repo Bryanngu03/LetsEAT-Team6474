@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
 import Fire from '../Fire';
 
 const AddReminderScreen = ({ navigation, route }) => {
-    const { postTitle, postDate } = route.params || {};
+    const { postTitle, postDate, postDescription } = route.params || {};
     const [title, setTitle] = useState(postTitle || '');
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState(postDescription || '');
     const [date, setDate] = useState(postDate ? new Date(postDate) : new Date());
     const [showPicker, setShowPicker] = useState(false);
     const [mode, setMode] = useState('date');
@@ -14,11 +15,39 @@ const AddReminderScreen = ({ navigation, route }) => {
     useEffect(() => {
         if (postTitle) setTitle(postTitle);
         if (postDate) setDate(new Date(postDate));
-    }, [postTitle, postDate]);
+        if (postDescription) setDescription(postDescription);
+    }, [postTitle, postDate, postDescription]);
+
+    useEffect(() => {
+        registerForPushNotificationsAsync();
+    }, []);
+
+    const registerForPushNotificationsAsync = async () => {
+        let { status } = await Notifications.getPermissionsAsync();
+        if (status !== 'granted') {
+            const { status: newStatus } = await Notifications.requestPermissionsAsync();
+            status = newStatus;
+        }
+        if (status !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+        }
+    };
 
     const handleAddReminder = async () => {
         await Fire.shared.addReminder({ title, description, date: date.getTime() });
+        schedulePushNotification(title, description, date);
         navigation.goBack(); // Go back to the previous screen
+    };
+
+    const schedulePushNotification = async (title, description, date) => {
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: `Reminder for ${title}`,
+                body: description,
+            },
+            trigger: { date },
+        });
     };
 
     const showMode = (currentMode) => {

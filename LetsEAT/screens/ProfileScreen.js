@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, Clipboard, FlatList, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, Clipboard, FlatList, RefreshControl, Dimensions, TextInput, Modal } from 'react-native';
 import { firebase } from '../firebase';
 import Fire from '../Fire';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,8 @@ const ProfileScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [savedPosts, setSavedPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -128,6 +130,21 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
+  const handleSendFeedback = async () => {
+    if (feedback.trim() === '') {
+      Alert.alert('Error', 'Feedback cannot be empty.');
+      return;
+    }
+    try {
+      await Fire.shared.submitFeedback(feedback);
+      Alert.alert('Success', 'Feedback sent successfully.');
+      setModalVisible(false);
+      setFeedback('');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send feedback: ' + error.message);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -167,6 +184,7 @@ const ProfileScreen = ({ navigation }) => {
           <MenuOptions customStyles={menuOptionsStyles}>
             <MenuOption onSelect={pickImage} text="Switch Icon" />
             <MenuOption onSelect={resetPassword} text="Reset Password" />
+            <MenuOption onSelect={() => setModalVisible(true)} text="Send Feedback" />
             <MenuOption onSelect={handleLogout} text="Log Out" />
           </MenuOptions>
         </Menu>
@@ -203,6 +221,31 @@ const ProfileScreen = ({ navigation }) => {
         }
         contentContainerStyle={{ width: '100%' }}
       />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Send Feedback</Text>
+            <TextInput
+              style={styles.feedbackInput}
+              placeholder="Type your feedback here..."
+              value={feedback}
+              onChangeText={setFeedback}
+              multiline
+            />
+            <TouchableOpacity style={styles.sendButton} onPress={handleSendFeedback}>
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -328,6 +371,56 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: 8,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  feedbackInput: {
+    width: '100%',
+    height: 100,
+    padding: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 5,
+    marginBottom: 20,
+    textAlignVertical: 'top', // For multiline input to align text at the top
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  sendButton: {
+    backgroundColor: '#E9446A',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sendButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+  },
+  closeButton: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#333',
+    fontSize: 16,
   },
 });
 

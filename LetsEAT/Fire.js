@@ -130,6 +130,15 @@ class Fire {
         }
     };
 
+    submitFeedback = async (feedback) => {
+        const uid = this.uid;
+        await this.firestore.collection('feedbacks').add({
+            feedback,
+            uid,
+            timestamp: this.timestamp
+        });
+    };
+    
     uploadPhotoAsync = async (uri, filename) => {
         const path = `photos/${this.uid}/${Date.now()}.jpg`;
 

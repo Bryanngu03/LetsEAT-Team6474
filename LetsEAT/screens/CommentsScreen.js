@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { db } from '../firebase';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
@@ -10,6 +10,7 @@ const CommentsScreen = ({ route, navigation }) => {
     const [comments, setComments] = useState([]);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(true);
+    const [addingComment, setAddingComment] = useState(false);
 
     const fetchComments = async () => {
         try {
@@ -35,6 +36,8 @@ const CommentsScreen = ({ route, navigation }) => {
     const handleAddComment = async () => {
         if (comment.trim() === '') return;
 
+        setAddingComment(true);
+
         try {
             const user = firebase.auth().currentUser;
             const userDoc = await db.collection('users').doc(user.uid).get();
@@ -52,6 +55,8 @@ const CommentsScreen = ({ route, navigation }) => {
             setComment('');
         } catch (error) {
             console.error('Error adding comment: ', error);
+        } finally {
+            setAddingComment(false);
         }
     };
 
@@ -84,8 +89,12 @@ const CommentsScreen = ({ route, navigation }) => {
                     value={comment}
                     onChangeText={setComment}
                 />
-                <TouchableOpacity onPress={handleAddComment}>
-                    <Ionicons name='send' size={24} color='#73788B' />
+                <TouchableOpacity onPress={handleAddComment} disabled={addingComment}>
+                    {addingComment ? (
+                        <ActivityIndicator size="small" color="#73788B" />
+                    ) : (
+                        <Ionicons name='send' size={24} color='#73788B' />
+                    )}
                 </TouchableOpacity>
             </View>
         </View>

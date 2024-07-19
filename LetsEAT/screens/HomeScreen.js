@@ -13,6 +13,7 @@ const HomeScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
+    const [loadingLikes, setLoadingLikes] = useState({});
 
     const fetchPosts = async () => {
         try {
@@ -64,6 +65,8 @@ const HomeScreen = ({ navigation }) => {
         const user = firebase.auth().currentUser;
         if (!user) return;
 
+        setLoadingLikes(prevState => ({ ...prevState, [postId]: true }));
+
         const likeRef = db.collection('posts').doc(postId).collection('likes').doc(user.uid);
         const postRef = db.collection('posts').doc(postId);
 
@@ -76,6 +79,7 @@ const HomeScreen = ({ navigation }) => {
         }
 
         fetchPosts();
+        setLoadingLikes(prevState => ({ ...prevState, [postId]: false }));
     };
 
     const handleDelete = async (postId, postUid) => {
@@ -174,7 +178,7 @@ const HomeScreen = ({ navigation }) => {
                     ) : null}
                     <Text style={styles.period}>Period: {moment(item.date).format('MM/DD/YYYY, h:mm:ss a')}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TouchableOpacity onPress={() => handleLike(item.id, item.liked)} style={styles.iconContainer}>
+                        <TouchableOpacity onPress={() => handleLike(item.id, item.liked)} style={styles.iconContainer} disabled={loadingLikes[item.id]}>
                             <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={24} color={item.liked ? 'red' : '#73788B'} style={{ marginRight: 8 }} />
                             <Text>{item.likes}</Text>
                         </TouchableOpacity>

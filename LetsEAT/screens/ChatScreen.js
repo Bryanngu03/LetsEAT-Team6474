@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { firebase } from '../firebase';
 import { Ionicons } from '@expo/vector-icons';
-import Fire from '../Fire';
 
 const ChatScreen = () => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
+    const [sending, setSending] = useState(false);
     const route = useRoute();
     const navigation = useNavigation();
     const { user } = route.params;
@@ -30,6 +30,10 @@ const ChatScreen = () => {
     }, [user.id, currentUser.uid]);
 
     const sendMessage = async () => {
+        if (text.trim() === '') return;
+
+        setSending(true);
+
         const chatId = currentUser.uid < user.id ? `${currentUser.uid}_${user.id}` : `${user.id}_${currentUser.uid}`;
 
         const messageData = {
@@ -58,6 +62,7 @@ const ChatScreen = () => {
         await chatDocRef.collection('messages').add(messageData);
 
         setText('');
+        setSending(false);
     };
 
     const renderItem = useCallback(({ item }) => (
@@ -87,8 +92,15 @@ const ChatScreen = () => {
                     placeholder="Type a message"
                     value={text}
                     onChangeText={setText}
+                    editable={!sending}
                 />
-                <Button title="Send" onPress={sendMessage} />
+                <TouchableOpacity onPress={sendMessage} disabled={sending}>
+                    {sending ? (
+                        <ActivityIndicator size="small" color="#73788B" />
+                    ) : (
+                        <Ionicons name='send' size={24} color='#73788B' />
+                    )}
+                </TouchableOpacity>
             </View>
         </View>
     );

@@ -7,6 +7,14 @@
       "developmentClient": false,
       "env": {
         "ENV": "release"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk"
       }
     }
   },

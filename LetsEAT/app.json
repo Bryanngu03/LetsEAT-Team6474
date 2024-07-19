@@ -3,6 +3,7 @@
     "name": "LetsEAT",
     "slug": "LetsEAT",
     "version": "3.0.0",
+    "owner": "letseat",
     "plugins": [
       "expo-font"
     ],

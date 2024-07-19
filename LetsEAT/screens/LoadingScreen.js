@@ -1,7 +1,7 @@
 // screens/LoadingScreen.js
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { firebase } from '../firebase'; // Ensure this path is correct
+import { firebase } from '../firebase'; 
 import { useNavigation } from '@react-navigation/native';
 
 export default function LoadingScreen() {

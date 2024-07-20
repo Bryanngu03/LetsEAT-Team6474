@@ -4,6 +4,9 @@ module.exports = function(api) {
     presets: [
       'babel-preset-expo',
       'module:metro-react-native-babel-preset'
+    ],
+    plugins: [
+      '@babel/plugin-transform-modules-commonjs'
     ]
   };
 };

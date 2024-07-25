@@ -70,16 +70,22 @@ const HomeScreen = ({ navigation }) => {
         const likeRef = db.collection('posts').doc(postId).collection('likes').doc(user.uid);
         const postRef = db.collection('posts').doc(postId);
 
-        if (liked) {
-            await likeRef.delete();
-            postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
-        } else {
-            await likeRef.set({ uid: user.uid });
-            postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
-        }
+        try {
+            if (liked) {
+                await likeRef.delete();
+                await postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
+            } else {
+                await likeRef.set({ uid: user.uid });
+                await postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
+            }
 
-        fetchPosts();
-        setLoadingLikes(prevState => ({ ...prevState, [postId]: false }));
+            // Ensure the fetched posts data is in sync with the current like state
+            fetchPosts();
+        } catch (error) {
+            console.error('Error handling like/unlike: ', error);
+        } finally {
+            setLoadingLikes(prevState => ({ ...prevState, [postId]: false }));
+        }
     };
 
     const handleDelete = async (postId, postUid) => {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "LetsEAT",
     "slug": "LetsEAT",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "owner": "letseat",
     "plugins": [
       "expo-font"
@@ -36,7 +36,7 @@
         "projectId": "c779b40e-2280-437d-9c0f-f0417c4ef97e"
       }
     },
-    "runtimeVersion": "3.0.0",
+    "runtimeVersion": "3.1.0",
     "updates": {
       "url": "https://u.expo.dev/c779b40e-2280-437d-9c0f-f0417c4ef97e"
     }

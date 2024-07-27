@@ -9,7 +9,7 @@
         "ENV": "release"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk" 
       }
     },
     "preview": {
